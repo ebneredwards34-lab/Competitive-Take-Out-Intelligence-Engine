@@ -1,1 +1,981 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Xerox Competitive Takeout Intelligence Engine v3</title>
+  <style>
+    :root{
+      --bg:#09111f;
+      --bg2:#0d1728;
+      --panel:#101d33;
+      --card:rgba(255,255,255,.055);
+      --card2:rgba(255,255,255,.075);
+      --text:#eaf0ff;
+      --muted:#aab7d1;
+      --muted2:#7f8ca7;
+      --border:rgba(255,255,255,.11);
+      --accent:#2f6bff;
+      --accent2:#64b2ff;
+      --good:#39d98a;
+      --warn:#ffc85c;
+      --bad:#ff7272;
+      --shadow:0 18px 60px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius2:22px;
+      --mono: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1100px 760px at -10% -10%, rgba(47,107,255,.28), transparent 55%),
+        radial-gradient(800px 600px at 110% 20%, rgba(100,178,255,.18), transparent 50%),
+        radial-gradient(900px 680px at 20% 115%, rgba(57,217,138,.10), transparent 45%),
+        linear-gradient(180deg,#08111f,#060d18 48%,#050a13);
+      overflow:hidden;
+    }
+    button,input,select,textarea{font:inherit}
+    a{text-decoration:none;color:inherit}
+    .app{height:100%;display:flex}
+    .sidebar{
+      width:300px;min-width:300px;padding:16px;
+      border-right:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .main{flex:1;display:flex;flex-direction:column;min-width:0}
+    .topbar{
+      height:68px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+      backdrop-filter:blur(10px);
+    }
+    .body{flex:1;display:flex;min-height:0}
+    .content{flex:1;overflow:auto;padding:18px}
+    .detail{
+      width:420px;min-width:420px;border-left:1px solid var(--border);overflow:auto;padding:16px;
+      background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
+    }
+    .brand,.searchbox,.nav,.sidebar-foot,.card,.mini-card,.table,.detail-card,.modal-card,.flow-card,.quadrant,.pack{
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+    }
+    .brand,.searchbox,.nav,.sidebar-foot,.card,.detail-card,.modal-card,.flow-card,.quadrant,.pack{
+      background:rgba(255,255,255,.05);
+    }
+    .brand,.searchbox,.sidebar-foot,.detail-card,.flow-card,.quadrant,.pack{border-radius:var(--radius)}
+    .nav,.card,.modal-card{border-radius:var(--radius2)}
+    .brand{display:flex;gap:12px;align-items:center;padding:12px}
+    .logo{
+      width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:900;
+      background:linear-gradient(135deg,var(--accent),rgba(100,178,255,.6));
+    }
+    .brand h1{margin:0;font-size:14px;line-height:1.15}
+    .sub{color:var(--muted);font-size:12px}
+    .searchbox{padding:10px 12px;display:flex;gap:10px;align-items:center}
+    .searchbox input{flex:1;background:transparent;border:none;outline:none;color:var(--text)}
+    .nav{padding:8px;display:flex;flex-direction:column;gap:6px}
+    .nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;color:var(--muted)}
+    .nav a.active,.nav a:hover{background:rgba(47,107,255,.20);color:var(--text)}
+    .nav .ico{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+    .nav .meta{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.18);border:1px solid var(--border)}
+    .sidebar-foot{margin-top:auto;padding:12px}
+    .title h2{margin:0;font-size:15px}
+    .title .crumb{font-size:12px;color:var(--muted);margin-top:2px}
+    .actions{display:flex;align-items:center;gap:10px}
+    .btn,.chip,.input,.select,textarea{
+      border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);
+      border-radius:14px;padding:10px 12px;
+    }
+    .chip{font-size:12px;color:var(--muted)}
+    .btn{cursor:pointer;font-weight:700}
+    .btn:hover{background:rgba(255,255,255,.08)}
+    .btn.primary{background:rgba(47,107,255,.22);border-color:rgba(47,107,255,.50)}
+    .btn.good{background:rgba(57,217,138,.14);border-color:rgba(57,217,138,.40)}
+    .btn.warn{background:rgba(255,200,92,.14);border-color:rgba(255,200,92,.36)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .card{padding:14px;overflow:hidden}
+    .mini-card{padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.04)}
+    .kpi .label{font-size:12px;color:var(--muted)}
+    .kpi .value{font-size:26px;font-weight:900;line-height:1.1;margin-top:6px}
+    .kpi .meta{font-size:12px;color:var(--muted);margin-top:4px}
+    .section-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+    .section-h h3,.section-h h2{margin:0;font-size:15px}
+    .section-h .right{font-size:12px;color:var(--muted)}
+    .pill,.badge{
+      display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:11px;
+      border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--muted)
+    }
+    .pill.good,.badge.good{background:rgba(57,217,138,.12);border-color:rgba(57,217,138,.36);color:#d8ffe9}
+    .pill.warn,.badge.warn{background:rgba(255,200,92,.12);border-color:rgba(255,200,92,.36);color:#fff0ca}
+    .pill.bad,.badge.bad{background:rgba(255,114,114,.12);border-color:rgba(255,114,114,.36);color:#ffdede}
+    .table{width:100%;border-collapse:collapse;overflow:hidden;background:rgba(0,0,0,.16)}
+    .table th,.table td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;text-align:left;vertical-align:top}
+    .table th{font-size:12px;color:var(--muted)}
+    .table tr:hover td{background:rgba(255,255,255,.05)}
+    .split{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .muted2{color:var(--muted2)}
+    .mono{font-family:var(--mono)}
+    .detail-card{padding:14px;margin-bottom:12px}
+    .detail-card h3{margin:0 0 8px;font-size:14px}
+    .detail-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+    .detail-list{padding-left:18px;margin:8px 0 0;color:var(--muted)}
+    .detail-list li{margin:6px 0}
+    .bar{height:11px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .bar > span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .bar.good > span{background:linear-gradient(90deg,#1fbe73,#67f4af)}
+    .bar.warn > span{background:linear-gradient(90deg,#ffb627,#ffd97d)}
+    .bar.bad > span{background:linear-gradient(90deg,#ff6868,#ff9a9a)}
+    .stack{display:flex;height:18px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08);border:1px solid var(--border)}
+    .stack .xrx{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .stack .comp{background:linear-gradient(90deg,#ff8a2b,#ff5f5f)}
+    .stack .other{background:linear-gradient(90deg,#4dd69f,#8bf2c4)}
+    .insight{padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);font-size:13px;color:var(--muted);line-height:1.5}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer}
+    .item:hover{background:rgba(255,255,255,.06)}
+    .avatar{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--border);font-weight:900}
+    .item .name{font-weight:800}
+    .item .desc{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+    .item .right{margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+    .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .flow-card{padding:12px;position:relative}
+    .flow-card h4{margin:0 0 6px;font-size:13px}
+    .flow-card ul{margin:0;padding-left:18px;color:var(--muted);font-size:12px;line-height:1.45}
+    .quad-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .quadrant{padding:12px;min-height:190px}
+    .quadrant h4{margin:0 0 8px;font-size:13px}
+    .quad-tag{font-size:11px;color:var(--muted);margin-bottom:8px}
+    .dot{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;margin:0 6px 6px 0;font-size:11px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;padding:20px}
+    .modal.open{display:flex}
+    .modal-card{width:min(980px,100%);max-height:88vh;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03))}
+    .modal-h{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;background:rgba(10,16,32,.92);border-bottom:1px solid var(--border)}
+    .modal-b{padding:14px}
+    .pack{padding:16px;background:rgba(255,255,255,.04)}
+    .pack-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+    .pack-box{padding:12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+    .pack-box h4{margin:0 0 8px;font-size:13px}
+    textarea{width:100%;min-height:100px;resize:vertical;outline:none}
+    .footer-note{font-size:12px;color:var(--muted);line-height:1.5}
+    .small{font-size:12px}
+    @media (max-width:1200px){.detail{display:none}.flow{grid-template-columns:1fr 1fr}.pack-grid{grid-template-columns:1fr}}
+    @media (max-width:900px){body{overflow:auto}.app{flex-direction:column;height:auto}.sidebar{width:100%;min-width:0;border-right:none;border-bottom:1px solid var(--border)}.body{flex-direction:column}.content{padding:14px}.grid{grid-template-columns:1fr}.flow,.quad-grid{grid-template-columns:1fr}}
+    @media print{body{background:#fff;color:#111;overflow:visible}.modal{position:static;display:block;background:transparent;padding:0}.modal-h{display:none}.modal-card,.pack,.pack-box{box-shadow:none;border:1px solid #ccc;background:#fff}.sidebar,.topbar,.detail{display:none}.content{padding:0}}
+    /* v3 additions */
+    .export-bar{display:flex;gap:8px;align-items:center;padding:10px 0 2px;flex-wrap:wrap}
+    .filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(47,107,255,.18);border:1px solid rgba(47,107,255,.40);color:#a5c4ff;cursor:pointer}
+    .filter-chip:hover{background:rgba(47,107,255,.28)}
+    .active-filters{font-size:12px;color:var(--muted)}
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,30,55,.97);border:1px solid var(--border);border-radius:14px;padding:10px 20px;font-size:13px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .pack-header-bar{display:flex;align-items:center;gap:14px;padding:0 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px}
+    .pack-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--accent),rgba(100,178,255,.7));display:grid;place-items:center;font-weight:900;font-size:18px;flex-shrink:0}
+    .pack-score-row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+    .pack-score-box{flex:1;min-width:100px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--border);text-align:center}
+    .pack-score-box .psv{font-size:28px;font-weight:900;line-height:1}
+    .pack-score-box .psl{font-size:11px;color:var(--muted);margin-top:4px}
+    .pack-divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+    .signal-mini{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+    .signal-mini:last-child{border-bottom:none}
+    .signal-mini .sml{flex:1;color:var(--muted)}
+    .signal-mini .smv{font-weight:700;min-width:28px;text-align:right}
+    .signal-mini .smbar{flex:0 0 80px;height:7px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .signal-mini .smbar span{display:block;height:100%;border-radius:999px}
+    .empty-state{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+    .row-fadeIn{animation:fadeRow .18s ease both}
+    @keyframes fadeRow{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    @media print{
+      body{background:#fff!important;color:#111!important;overflow:visible!important}
+      .modal{position:static!important;display:block!important;background:transparent!important;padding:0!important}
+      .modal-h{display:none!important}
+      .modal-card{max-height:none!important;border:none!important;background:#fff!important;box-shadow:none!important}
+      .pack{background:#fff!important;padding:0!important}
+      .pack-box{border:1px solid #ddd!important;background:#fafafa!important}
+      .pack-logo{background:#1a3a8f!important;color:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      .badge,.pill{border:1px solid #ccc!important;background:#f0f0f0!important;color:#333!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      .badge.bad{background:#fee!important;border-color:#f99!important;color:#700!important}
+      .badge.warn{background:#fff8e1!important;border-color:#fbc02d!important;color:#5a3e00!important}
+      .badge.good{background:#e8f5e9!important;border-color:#81c784!important;color:#1b5e20!important}
+      .pack-score-box{border:1px solid #ddd!important;background:#f5f5f5!important}
+      .sidebar,.topbar,.detail{display:none!important}
+      .content{padding:0!important}
+      .signal-mini .smbar span{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      @page{margin:1.8cm 2cm}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">X</div>
+      <div>
+        <h1>Xerox Competitive Takeout<br>Intelligence Engine</h1>
+        <div class="sub">Multi-signal competitive detection prototype v3</div>
+      </div>
+    </div>
+    <div class="searchbox">
+      <span>🔎</span>
+      <input id="globalSearch" placeholder="Search accounts, reps, industries, competitors…" />
+      <span class="sub mono">/</span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div class="footer-note"><b>Purpose:</b> detect likely non-Xerox fleet presence, estimate hidden fleet size, rank takeout opportunities, and generate rep-ready actions.</div>
+      <div class="split" style="margin-top:10px">
+        <span class="pill">Fleet gap</span>
+        <span class="pill">Renewal timing</span>
+        <span class="pill">Volume leakage</span>
+        <span class="pill">Service friction</span>
+      </div>
+      <div class="footer-note" style="margin-top:10px;opacity:.6">Shortcuts: <b>/</b> search • <b>P</b> pack • <b>E</b> export</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="title">
+        <h2 id="pageTitle">Overview</h2>
+        <div class="crumb" id="pageCrumb">Competitive detection • hidden fleet • action intelligence</div>
+      </div>
+      <div class="actions">
+        <div class="chip">Sample data • <span id="clock" class="mono"></span></div>
+        <button class="btn" id="btnExportCSV" title="Export filtered accounts to CSV">Export CSV</button>
+        <button class="btn" id="btnToggleDetail">Toggle details</button>
+        <button class="btn primary" id="btnQuickPack">Quick takeout pack</button>
+      </div>
+    </header>
+    <div class="body">
+      <section class="content" id="content"></section>
+      <aside class="detail" id="detail"></aside>
+    </div>
+  </main>
+</div>
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="modal-h">
+      <div>
+        <div style="font-weight:900">Takeout Pack</div>
+        <div class="sub">One-page shareable account intelligence summary</div>
+      </div>
+      <div class="split">
+        <button class="btn" id="btnCopyPack">Copy text</button>
+        <button class="btn good" onclick="window.print()">📄 Print / Save PDF</button>
+        <button class="btn warn" id="btnCloseModal">Close</button>
+      </div>
+    </div>
+    <div class="modal-b" id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const NAV = [
+  ['overview','Overview','📊'],
+  ['targets','Takeout Targets','🎯'],
+  ['account','Account Intelligence','🧠'],
+  ['fleet','Fleet Shadow Estimator','🖨️'],
+  ['explain','Signal Explainability','🔍'],
+  ['manager','Manager View','👔'],
+  ['architecture','System Architecture','🏗️']
+];
+const competitors = {
+  hp:{name:'HP', color:'warn', talk:['Anchor on total cost, not device price.','Position Xerox governance and fleet optimization for distributed environments.','Use security and workflow controls mapping to neutralize feature parity claims.'], landmines:['Do not fight only on upfront hardware pricing.','Do not allow discussion to ignore supplies, downtime, and policy enforcement.']},
+  canon:{name:'Canon', color:'good', talk:['Broaden the buying criteria beyond print quality to workflow, compliance, and labor reduction.','Preserve print-room quality needs while improving upstream capture and downstream governance.','Use pilot metrics around exception reduction and turnaround.'], landmines:['Do not let the conversation stay only in production hardware specs.']},
+  ricoh:{name:'Ricoh', color:'bad', talk:['Win with KPI contracting and tighter scope discipline.','Position Xerox as faster to pilot and easier to govern.','Tie services breadth to measurable business outcomes, not narrative.'], landmines:['Do not compete with vague transformation language. Force KPI commitments.']},
+  konica:{name:'Konica Minolta', color:'warn', talk:['Lead with modernization path and governance.','Quantify lifecycle refresh and mixed fleet complexity.','Focus on SLA consistency and strategic roadmap.'], landmines:['Avoid generic service comparisons without evidence.']},
+  sharp:{name:'Sharp', color:'good', talk:['Emphasize enterprise analytics, automation, and policy controls.','Show distributed fleet economics versus point-product value.'], landmines:['Do not reduce the discussion to device familiarity.']}
+};
+const reps = ['A. Rivera','C. Patel','D. Johnson','M. Kim','S. Lewis'];
+const industries = ['Legal','Healthcare','Finance','Education','Manufacturing','Real Estate','Nonprofit'];
+const accounts = generateAccounts();
+const state = {
+  route:'overview',
+  q:'',
+  selectedId: accounts[0].accountId,
+  detailOpen:true,
+  filters:{rep:'all', industry:'all', strategic:'all', scoreBand:'all', oppBand:'all', confidence:'all', renewal:'all'}
+};
 
+function generateAccounts(){
+  const raw = [
+    ['Northwind Health','Healthcare','A. Rivera',true,860,5,1.9,'hp',14,52,880000,1420000,22,6,41,8,3,2,true,'High',72],
+    ['Midtown Legal Group','Legal','C. Patel',true,220,2,1.4,'canon',9,61,260000,430000,7,2,18,6,2,1,false,'Medium',81],
+    ['Beacon Capital','Finance','D. Johnson',true,540,3,2.6,'ricoh',11,58,520000,970000,15,5,63,10,4,2,true,'Medium',67],
+    ['Harbor Manufacturing','Manufacturing','M. Kim',false,730,4,2.1,'hp',16,49,760000,1320000,19,7,54,11,3,1,false,'High',61],
+    ['Civic Housing Partners','Real Estate','S. Lewis',false,310,5,1.2,'sharp',8,64,210000,420000,11,2,77,7,1,1,true,'Low',64],
+    ['Blue Ridge University','Education','C. Patel',true,1300,6,2.8,'canon',18,57,1180000,1900000,28,8,69,13,5,3,true,'High',59],
+    ['Summit Nonprofit Alliance','Nonprofit','A. Rivera',false,190,2,0.7,'hp',6,44,120000,215000,6,1,24,5,1,0,false,'Low',74],
+    ['Apex Advisory','Finance','D. Johnson',true,420,2,1.6,'ricoh',10,66,380000,750000,12,4,88,9,2,3,true,'Medium',52],
+    ['Riverside Medical Arts','Healthcare','S. Lewis',true,680,3,2.0,'hp',12,54,610000,1120000,14,4,35,8,2,2,false,'Medium',70],
+    ['Brookfield Title','Real Estate','M. Kim',false,250,2,0.9,'konica',7,59,165000,330000,8,2,46,6,2,1,false,'Low',66],
+    ['Atlas Engineering','Manufacturing','A. Rivera',false,910,4,2.3,'ricoh',15,62,840000,1480000,18,5,59,12,4,2,true,'High',58],
+    ['Kingsley & Howe','Legal','C. Patel',true,300,2,1.1,'canon',9,53,210000,405000,9,3,33,7,2,1,false,'Medium',77],
+    ['East Harbor Clinics','Healthcare','D. Johnson',false,470,3,1.3,'sharp',8,45,360000,620000,13,4,29,6,1,1,false,'Low',71],
+    ['Metro Civic Services','Education','S. Lewis',true,980,5,2.4,'ricoh',13,60,950000,1680000,24,7,95,11,4,3,true,'High',55],
+    ['Silverline Realty','Real Estate','M. Kim',false,210,2,0.8,'hp',6,48,135000,250000,7,1,57,5,1,0,false,'Low',73],
+    ['Westlake Community Bank','Finance','A. Rivera',true,340,2,1.5,'ricoh',10,68,295000,615000,10,4,76,9,2,2,true,'Medium',62],
+    ['North Star Packaging','Manufacturing','D. Johnson',false,650,3,1.9,'hp',13,51,580000,1020000,16,5,44,10,3,1,false,'Medium',63],
+    ['Evergreen Aid Society','Nonprofit','S. Lewis',false,160,1,0.5,'sharp',4,47,90000,160000,5,1,66,4,1,0,false,'Low',69],
+    ['Park Avenue Counsel','Legal','C. Patel',true,410,3,1.7,'canon',11,63,335000,640000,12,3,50,8,2,2,true,'Medium',75],
+    ['Meridian Diagnostics','Healthcare','M. Kim',true,740,4,2.2,'hp',14,56,690000,1190000,17,6,58,10,3,2,true,'High',60],
+    ['Nova Public Schools','Education','A. Rivera',true,1180,5,2.5,'canon',17,58,1040000,1820000,27,8,82,12,5,3,true,'High',57],
+    ['Harbor Light Foundation','Nonprofit','S. Lewis',false,140,1,0.4,'konica',4,43,80000,145000,4,1,31,4,0,0,false,'Low',76],
+    ['Oakline Treasury','Finance','D. Johnson',false,370,2,1.2,'ricoh',8,65,250000,530000,11,3,72,7,2,2,true,'Medium',64],
+    ['Pinnacle Estates','Real Estate','M. Kim',false,280,3,1.0,'hp',7,50,175000,360000,8,2,61,6,1,1,false,'Low',68],
+    ['Granite BioHealth','Healthcare','A. Rivera',true,620,4,1.8,'ricoh',12,55,540000,980000,15,5,47,9,3,2,true,'Medium',65],
+    ['Iron Peak Components','Manufacturing','D. Johnson',true,890,5,2.7,'hp',16,60,920000,1610000,20,7,74,12,4,3,true,'High',54],
+    ['Lexbridge Counsel','Legal','C. Patel',false,260,2,0.95,'canon',8,52,185000,370000,9,2,39,6,1,1,false,'Low',79],
+    ['Crescent Learning','Education','S. Lewis',false,690,4,1.6,'sharp',10,49,480000,905000,14,4,52,8,2,1,false,'Medium',67],
+    ['Union Street Advisors','Finance','M. Kim',true,455,2,1.4,'ricoh',9,67,310000,640000,13,5,91,8,3,2,true,'High',56],
+    ['Pioneer Housing Network','Nonprofit','A. Rivera',false,205,2,0.6,'konica',5,46,118000,210000,6,1,28,5,1,0,false,'Low',72],
+    ['Stellar Ortho Group','Healthcare','D. Johnson',true,530,3,1.55,'hp',10,57,425000,840000,12,4,65,7,2,1,false,'Medium',69],
+    ['Cobalt Property Mgmt','Real Estate','S. Lewis',false,325,3,1.1,'sharp',8,54,205000,395000,9,2,83,6,1,1,true,'Medium',61]
+  ];
+  return raw.map((r,i)=>{
+    const [accountName, industry, assignedRep, strategicAccount, employeeCount, locationCount, annualRevenueEstimate, competitorHint, xeroxInstalledDevices, avgDeviceAgeMonths, xeroxObservedPrintVolume, estimatedTotalPrintVolume, serviceTicketCount, unresolvedServiceIssues, lastRepContactDays, renewalMonthsRemaining, openOpportunityCount, lostToCompetitorCount, serviceNoteMentionsCompetitor, repEngagementLevel, accountHealthScore] = r;
+    const deviceDensity = {Legal:.020, Healthcare:.021, Finance:.018, Education:.014, Manufacturing:.016, 'Real Estate':.017, Nonprofit:.015}[industry] || .017;
+    const estimatedTotalDeviceNeed = Math.max(xeroxInstalledDevices+1, Math.round(employeeCount * deviceDensity + locationCount*0.8));
+    const competitorMentionsCount = Math.max(0, lostToCompetitorCount + (serviceNoteMentionsCompetitor?1:0) + (renewalMonthsRemaining < 9 ? 1 : 0) + (lastRepContactDays > 70 ? 1 : 0));
+    const uccEvidenceFlag = (i % 4 === 0) || (competitorHint === 'ricoh' && renewalMonthsRemaining < 12);
+    const uccVendorMention = uccEvidenceFlag ? competitors[competitorHint].name : '';
+    const deviceUtilizationRate = Math.min(92, Math.max(33, Math.round((xeroxObservedPrintVolume / Math.max(estimatedTotalPrintVolume,1))*118)));
+    const estimatedDealValue = Math.round((Math.max(estimatedTotalDeviceNeed - xeroxInstalledDevices, 1) * 85 + annualRevenueEstimate*240) * 10000) / 10000;
+    return {
+      accountId:'acct-'+String(i+1).padStart(3,'0'), accountName, industry, assignedRep, strategicAccount,
+      employeeCount, locationCount, annualRevenueEstimate, competitorHint, estimatedTotalDeviceNeed,
+      xeroxInstalledDevices, avgDeviceAgeMonths, xeroxObservedPrintVolume, estimatedTotalPrintVolume,
+      serviceTicketCount, unresolvedServiceIssues, lastRepContactDays, renewalMonthsRemaining,
+      openOpportunityCount, lostToCompetitorCount, competitorMentionsCount, serviceNoteMentionsCompetitor,
+      uccEvidenceFlag, uccVendorMention, repEngagementLevel, accountHealthScore, estimatedDealValue,
+      deviceUtilizationRate
+    };
+  });
+}
+
+function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+function norm(v,min,max){ return clamp((v-min)/(max-min||1),0,1)*100; }
+function fmtMoney(v){ return '$' + (v>=1000000 ? (v/1000000).toFixed(2)+'M' : (v/1000).toFixed(0)+'K'); }
+function fmtPct(v){ return Math.round(v) + '%'; }
+function badgeBand(kind, val){
+  if(kind==='cp'){
+    if(val>=81) return ['Highly Likely','bad'];
+    if(val>=61) return ['Likely','warn'];
+    if(val>=31) return ['Possible','good'];
+    return ['Low','good'];
+  }
+  if(kind==='op'){
+    if(val>=80) return ['High Priority','bad'];
+    if(val>=60) return ['Emerging','warn'];
+    if(val>=40) return ['Watchlist','good'];
+    return ['Low Priority','good'];
+  }
+  if(kind==='conf'){
+    if(val>=75) return ['High confidence','good'];
+    if(val>=50) return ['Medium confidence','warn'];
+    return ['Low confidence','bad'];
+  }
+  return ['Info','good'];
+}
+
+function scoreAccount(a){
+  const coverageRatio = a.xeroxInstalledDevices / Math.max(a.estimatedTotalDeviceNeed,1);
+  const fleetGap = Math.max(a.estimatedTotalDeviceNeed - a.xeroxInstalledDevices, 0);
+  const fleetCoverageGapScore = clamp((1-coverageRatio)*100 + fleetGap*2.5, 0, 100);
+  const competitorEvidenceScore = clamp(a.competitorMentionsCount*20 + a.lostToCompetitorCount*12 + (a.serviceNoteMentionsCompetitor?16:0), 0, 100);
+  const volumeLeakage = Math.max(a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume, 0);
+  const volumeLeakageScore = norm(volumeLeakage, 0, 900000);
+  const deviceAgePressureScore = norm(a.avgDeviceAgeMonths, 24, 72);
+  const serviceFrictionScore = clamp(a.serviceTicketCount*3 + a.unresolvedServiceIssues*8, 0, 100);
+  const renewalTimingScore = clamp(100 - a.renewalMonthsRemaining*7.5, 0, 100);
+  const historicalCompetitiveLossScore = clamp(a.lostToCompetitorCount*25,0,100);
+  const uccEvidenceScore = a.uccEvidenceFlag ? (a.uccVendorMention ? 80 : 50) : 10;
+  const competitorPresenceScore = Math.round(
+    fleetCoverageGapScore*.25 + competitorEvidenceScore*.20 + volumeLeakageScore*.15 +
+    deviceAgePressureScore*.10 + serviceFrictionScore*.10 + renewalTimingScore*.10 +
+    historicalCompetitiveLossScore*.05 + uccEvidenceScore*.05
+  );
+  const shadowFleet = Math.max(a.estimatedTotalDeviceNeed - a.xeroxInstalledDevices, 0);
+  const revenuePotentialScore = norm(a.estimatedDealValue, 300000, 2600000);
+  const strategicAccountScore = a.strategicAccount ? 100 : 30;
+  const repReadinessScore = a.repEngagementLevel === 'High' ? 90 : a.repEngagementLevel === 'Medium' ? 62 : 34;
+  const sourceSignals = [
+    fleetGap>0,
+    a.competitorMentionsCount>0,
+    volumeLeakage>120000,
+    a.avgDeviceAgeMonths>48,
+    a.unresolvedServiceIssues>1,
+    a.renewalMonthsRemaining<12,
+    a.lostToCompetitorCount>0,
+    a.uccEvidenceFlag
+  ].filter(Boolean).length;
+  const alignmentBoost = (competitorPresenceScore>65 && shadowFleet>=3 && a.renewalMonthsRemaining<=12) ? 12 : 0;
+  const confidenceScore = clamp(sourceSignals*10 + alignmentBoost + (a.serviceNoteMentionsCompetitor?8:0), 20, 96);
+  const takeoutOpportunityScore = Math.round(
+    competitorPresenceScore*.40 + revenuePotentialScore*.20 + renewalTimingScore*.15 +
+    strategicAccountScore*.10 + repReadinessScore*.10 + confidenceScore*.05
+  );
+  const action = takeoutOpportunityScore>=80 ? 'Initiate competitive displacement strategy and schedule fleet assessment within 7 days.'
+    : takeoutOpportunityScore>=60 ? 'Validate competitor footprint, increase contact cadence, and gather floor-level device intelligence.'
+    : takeoutOpportunityScore>=40 ? 'Monitor account closely, verify renewal timing, and collect more evidence.'
+    : 'Passive monitoring only; maintain baseline outreach.';
+  const reasons = [];
+  if(coverageRatio < .55) reasons.push(`Xerox covers only ${a.xeroxInstalledDevices} of estimated ${a.estimatedTotalDeviceNeed} devices.`);
+  if(volumeLeakage > 200000) reasons.push(`Expected print demand exceeds Xerox-observed volume by ${Math.round(volumeLeakage/1000)}K pages.`);
+  if(a.serviceNoteMentionsCompetitor || a.competitorMentionsCount>1) reasons.push(`CRM / note evidence indicates competitor presence risk.`);
+  if(a.renewalMonthsRemaining <= 12) reasons.push(`Renewal window is inside ${a.renewalMonthsRemaining} months.`);
+  if(a.avgDeviceAgeMonths >= 54) reasons.push(`Average Xerox device age of ${a.avgDeviceAgeMonths} months increases refresh pressure.`);
+  if(a.unresolvedServiceIssues >= 3) reasons.push(`Open service friction creates displacement risk.`);
+  return {
+    ...a,
+    metrics:{coverageRatio, fleetGap, volumeLeakage, fleetCoverageGapScore, competitorEvidenceScore, volumeLeakageScore, deviceAgePressureScore, serviceFrictionScore, renewalTimingScore, historicalCompetitiveLossScore, uccEvidenceScore},
+    competitorPresenceScore, shadowFleet, confidenceScore, takeoutOpportunityScore, action, reasons
+  };
+}
+const scored = accounts.map(scoreAccount);
+
+function currentAccounts(){
+  const q = state.q.toLowerCase();
+  return scored.filter(a => {
+    if(q && !(a.accountName+' '+a.industry+' '+a.assignedRep+' '+competitors[a.competitorHint].name).toLowerCase().includes(q)) return false;
+    if(state.filters.rep !== 'all' && a.assignedRep !== state.filters.rep) return false;
+    if(state.filters.industry !== 'all' && a.industry !== state.filters.industry) return false;
+    if(state.filters.strategic !== 'all' && String(a.strategicAccount) !== state.filters.strategic) return false;
+    if(state.filters.scoreBand !== 'all'){
+      const cp = a.competitorPresenceScore;
+      if(state.filters.scoreBand==='high' && cp<81) return false;
+      if(state.filters.scoreBand==='likely' && (cp<61 || cp>80)) return false;
+      if(state.filters.scoreBand==='possible' && (cp<31 || cp>60)) return false;
+      if(state.filters.scoreBand==='low' && cp>30) return false;
+    }
+    if(state.filters.oppBand !== 'all'){
+      const op = a.takeoutOpportunityScore;
+      if(state.filters.oppBand==='high' && op<80) return false;
+      if(state.filters.oppBand==='emerging' && (op<60 || op>79)) return false;
+      if(state.filters.oppBand==='watch' && (op<40 || op>59)) return false;
+      if(state.filters.oppBand==='low' && op>39) return false;
+    }
+    if(state.filters.confidence !== 'all'){
+      const c = a.confidenceScore;
+      if(state.filters.confidence==='high' && c<75) return false;
+      if(state.filters.confidence==='medium' && (c<50 || c>=75)) return false;
+      if(state.filters.confidence==='low' && c>=50) return false;
+    }
+    if(state.filters.renewal !== 'all'){
+      if(state.filters.renewal==='lt6' && a.renewalMonthsRemaining>=6) return false;
+      if(state.filters.renewal==='lt12' && a.renewalMonthsRemaining>=12) return false;
+      if(state.filters.renewal==='gte12' && a.renewalMonthsRemaining<12) return false;
+    }
+    return true;
+  }).sort((a,b)=>b.takeoutOpportunityScore - a.takeoutOpportunityScore);
+}
+function selectedAccount(){
+  return scored.find(a => a.accountId === state.selectedId) || currentAccounts()[0] || scored[0];
+}
+function setRoute(route){ state.route = route; render(); }
+function setSelected(id){ state.selectedId = id; renderDetail(); }
+function nowClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+setInterval(nowClock,1000); nowClock();
+
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = NAV.map(([route,label,ico]) => `<a href="#" data-route="${route}" class="${state.route===route?'active':''}"><span class="ico">${ico}</span><span>${label}</span><span class="meta">${route==='targets' ? currentAccounts().length : ''}</span></a>`).join('');
+  nav.querySelectorAll('a').forEach(a => a.onclick = e => { e.preventDefault(); setRoute(a.dataset.route); });
+}
+function filtersHTML(){
+  return `<div class="split" style="margin-bottom:12px">
+    <select class="input select" id="fRep"><option value="all">All reps</option>${reps.map(r=>`<option ${state.filters.rep===r?'selected':''}>${r}</option>`).join('')}</select>
+    <select class="input select" id="fIndustry"><option value="all">All industries</option>${industries.map(i=>`<option ${state.filters.industry===i?'selected':''}>${i}</option>`).join('')}</select>
+    <select class="input select" id="fStrategic"><option value="all">All accounts</option><option value="true" ${state.filters.strategic==='true'?'selected':''}>Strategic only</option><option value="false" ${state.filters.strategic==='false'?'selected':''}>Non-strategic</option></select>
+    <select class="input select" id="fRenewal"><option value="all">All renewals</option><option value="lt6" ${state.filters.renewal==='lt6'?'selected':''}>< 6 months</option><option value="lt12" ${state.filters.renewal==='lt12'?'selected':''}>< 12 months</option><option value="gte12" ${state.filters.renewal==='gte12'?'selected':''}>12+ months</option></select>
+  </div>`;
+}
+function bindFilters(){
+  ['Rep','Industry','Strategic','Renewal'].forEach(name => {
+    const el = document.getElementById('f'+name); if(!el) return;
+    el.onchange = () => { state.filters[name.toLowerCase()] = el.value; render(); };
+  });
+}
+function render(){
+  renderNav();
+  const content = document.getElementById('content');
+  const detail = document.getElementById('detail');
+  detail.style.display = state.detailOpen ? '' : 'none';
+  const routes = {
+    overview: renderOverview,
+    targets: renderTargets,
+    account: renderAccountPage,
+    fleet: renderFleet,
+    explain: renderExplain,
+    manager: renderManager,
+    architecture: renderArchitecture
+  };
+  routes[state.route](content);
+  renderDetail();
+}
+function setTitle(title, crumb){
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageCrumb').textContent = crumb;
+}
+function renderOverview(content){
+  setTitle('Overview','Competitive detection • modeled opportunity • executive summary');
+  const list = currentAccounts();
+  const high = list.filter(a=>a.takeoutOpportunityScore>=80);
+  const likely = list.filter(a=>a.competitorPresenceScore>=61);
+  const hiddenFleet = list.reduce((s,a)=>s+a.shadowFleet,0);
+  const renew12 = list.filter(a=>a.renewalMonthsRemaining<12).length;
+  const strategic = list.filter(a=>a.strategicAccount && a.takeoutOpportunityScore>=60).length;
+  const avgConf = list.length ? Math.round(list.reduce((s,a)=>s+a.confidenceScore,0)/list.length) : 0;
+  const avgCp = list.length ? Math.round(list.reduce((s,a)=>s+a.competitorPresenceScore,0)/list.length) : 0;
+  const totalValue = list.reduce((s,a)=>s+a.estimatedDealValue,0);
+  const bandCounts = {
+    high: list.filter(a=>a.takeoutOpportunityScore>=80).length,
+    emerging: list.filter(a=>a.takeoutOpportunityScore>=60 && a.takeoutOpportunityScore<80).length,
+    watch: list.filter(a=>a.takeoutOpportunityScore>=40 && a.takeoutOpportunityScore<60).length,
+    low: list.filter(a=>a.takeoutOpportunityScore<40).length
+  };
+  content.innerHTML = `
+    ${filtersHTML()}
+    <div class="grid">
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Accounts analyzed</div><div class="value">${list.length}</div><div class="meta">Filtered book size</div></div><span class="pill">Book</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">High-priority takeout accounts</div><div class="value">${high.length}</div><div class="meta">80+ opportunity score</div></div><span class="pill bad">Urgent</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Avg competitor presence</div><div class="value">${avgCp}</div><div class="meta">Modeled 0–100</div></div><span class="pill warn">Likelihood</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Estimated hidden fleet</div><div class="value">${hiddenFleet}</div><div class="meta">Modeled non-Xerox units</div></div><span class="pill">Fleet</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Renewal window < 12 months</div><div class="value">${renew12}</div><div class="meta">Timing pressure</div></div><span class="pill warn">Timing</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Strategic targets</div><div class="value">${strategic}</div><div class="meta">Strategic accounts @ 60+</div></div><span class="pill bad">Strategic</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Avg confidence score</div><div class="value">${avgConf}</div><div class="meta">Signal richness + alignment</div></div><span class="pill good">Confidence</span></div></div>
+      <div class="card" style="grid-column:span 3"><div class="kpi"><div><div class="label">Modeled opportunity value</div><div class="value">${fmtMoney(totalValue)}</div><div class="meta">Across filtered book</div></div><span class="pill">Value</span></div></div>
+
+      <div class="card" style="grid-column:span 7">
+        <div class="section-h"><h3>Top takeout targets</h3><div class="right">Top 10 by opportunity score</div></div>
+        <table class="table"><thead><tr><th>Account</th><th>Rep</th><th>CP Score</th><th>Opp Score</th><th>Shadow Fleet</th><th>Renewal</th><th>Action</th></tr></thead><tbody>
+          ${list.slice(0,10).map(a=>`<tr data-select="${a.accountId}"><td><b>${a.accountName}</b><div class="small muted">${a.industry} • ${competitors[a.competitorHint].name} likely</div></td><td>${a.assignedRep}</td><td>${scoreBadgeHTML('cp',a.competitorPresenceScore)}</td><td>${scoreBadgeHTML('op',a.takeoutOpportunityScore)}</td><td>${a.shadowFleet}</td><td>${a.renewalMonthsRemaining} mo</td><td class="small muted">${a.action}</td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      <div class="card" style="grid-column:span 5">
+        <div class="section-h"><h3>Opportunity distribution</h3><div class="right">Score bands</div></div>
+        ${bandBar('High Priority', bandCounts.high, list.length, 'bad')}
+        ${bandBar('Emerging', bandCounts.emerging, list.length, 'warn')}
+        ${bandBar('Watchlist', bandCounts.watch, list.length, 'good')}
+        ${bandBar('Low Priority', bandCounts.low, list.length, 'good')}
+        <div class="detail-card" style="margin-top:12px">
+          <h3>Executive translation</h3>
+          <p>${high.length} accounts show high competitive takeout potential, representing an estimated ${hiddenFleet} non-Xerox devices and ${fmtMoney(totalValue)} in modeled displacement value. ${likely.length} accounts have likely or highly likely non-Xerox fleet presence, while ${renew12} accounts are inside a 12‑month timing window.</p>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column:span 12">
+        <div class="section-h"><h3>AI sales intelligence insights</h3><div class="right">Auto-generated</div></div>
+        <div class="grid">
+          <div class="mini-card" style="grid-column:span 4"><div class="insight">${high.length} accounts qualify as high-priority takeout opportunities and should receive targeted rep focus this quarter.</div></div>
+          <div class="mini-card" style="grid-column:span 4"><div class="insight">${list.filter(a=>a.shadowFleet>=4).length} accounts show a hidden fleet gap of 4+ devices, suggesting strong displacement potential.</div></div>
+          <div class="mini-card" style="grid-column:span 4"><div class="insight">${list.filter(a=>a.strategicAccount && a.competitorPresenceScore>=70).length} strategic accounts show strong modeled competitor presence and warrant manager inspection.</div></div>
+        </div>
+      </div>
+    </div>`;
+  bindFilters();
+  content.querySelectorAll('[data-select]').forEach(tr=>tr.onclick=()=>{ setSelected(tr.dataset.select); setRoute('account'); });
+}
+function bandBar(label,val,total,kind){
+  return `<div style="margin-bottom:10px"><div class="split" style="justify-content:space-between;margin-bottom:4px"><span>${label}</span><span class="muted">${val}</span></div><div class="bar ${kind}"><span style="width:${total?Math.round(val/total*100):0}%"></span></div></div>`;
+}
+function scoreBadgeHTML(kind,val){ const [txt,cls]=badgeBand(kind,val); return `<span class="badge ${cls}">${val} • ${txt}</span>`; }
+function renderTargets(content){
+  setTitle('Takeout Targets','Ranked displacement opportunities • filters • action queue');
+  const list = currentAccounts();
+  const activeFilterCount = Object.values(state.filters).filter(v=>v!=='all').length;
+  const emptyRow = list.length === 0 ? `<tr><td colspan="9"><div class="empty-state">No accounts match the current filters. <span class="filter-chip" id="clearFilters">Clear all filters</span></div></td></tr>` : '';
+  content.innerHTML = `${filtersHTML()}
+    <div class="split" style="margin-bottom:12px">
+      <select class="input select" id="fScore"><option value="all">All competitor scores</option><option value="high">81–100 highly likely</option><option value="likely">61–80 likely</option><option value="possible">31–60 possible</option><option value="low">0–30 low</option></select>
+      <select class="input select" id="fOpp"><option value="all">All opportunity bands</option><option value="high">80–100 high priority</option><option value="emerging">60–79 emerging</option><option value="watch">40–59 watchlist</option><option value="low">0–39 low</option></select>
+      <select class="input select" id="fConf"><option value="all">All confidence levels</option><option value="high">High confidence</option><option value="medium">Medium confidence</option><option value="low">Low confidence</option></select>
+    </div>
+    <div class="export-bar">
+      ${activeFilterCount ? `<span class="active-filters">Showing <b>${list.length}</b> accounts • ${activeFilterCount} filter${activeFilterCount>1?'s':''} active</span><span class="filter-chip" id="clearFiltersTop">✕ Clear filters</span>` : `<span class="active-filters"><b>${list.length}</b> accounts</span>`}
+      <button class="btn" style="margin-left:auto;font-size:12px;padding:6px 12px" id="exportThisView">⬇ Export filtered CSV</button>
+    </div>
+    <div class="card">
+      <div class="section-h"><h3>Accounts requiring takeout attention</h3><div class="right">Sorted by takeout opportunity score</div></div>
+      <table class="table"><thead><tr><th>Account</th><th>Rep</th><th>Competitor score</th><th>Opportunity score</th><th>Confidence</th><th>Shadow fleet</th><th>Renewal</th><th>Estimated value</th><th>Recommended action</th></tr></thead><tbody>
+        ${list.map((a,i)=>`<tr class="row-fadeIn" style="animation-delay:${i*18}ms" data-select="${a.accountId}"><td><b>${a.accountName}</b><div class="small muted">${a.industry} • ${a.strategicAccount?'Strategic':'Standard'} • likely ${competitors[a.competitorHint].name}</div></td><td>${a.assignedRep}</td><td>${scoreBadgeHTML('cp',a.competitorPresenceScore)}</td><td>${scoreBadgeHTML('op',a.takeoutOpportunityScore)}</td><td>${scoreBadgeHTML('conf',a.confidenceScore)}</td><td>${a.shadowFleet}</td><td>${a.renewalMonthsRemaining} mo</td><td>${fmtMoney(a.estimatedDealValue)}</td><td class="small muted">${a.action}</td></tr>`).join('')}
+        ${emptyRow}
+      </tbody></table>
+    </div>`;
+  bindFilters();
+  ['Score','Opp','Conf'].forEach(name=>{
+    const el=document.getElementById('f'+name); if(!el) return;
+    const key = name==='Score'?'scoreBand':name==='Opp'?'oppBand':'confidence';
+    el.value = state.filters[key];
+    el.onchange=()=>{state.filters[key]=el.value; render();};
+  });
+  content.querySelectorAll('[data-select]').forEach(tr=>tr.onclick=()=>{ setSelected(tr.dataset.select); renderDetail(); });
+  const exportBtn = document.getElementById('exportThisView');
+  if(exportBtn) exportBtn.onclick = ()=> exportCSV(list);
+  const clearTop = document.getElementById('clearFiltersTop');
+  if(clearTop) clearTop.onclick = ()=>{ clearAllFilters(); render(); };
+  const clearEmpty = document.getElementById('clearFilters');
+  if(clearEmpty) clearEmpty.onclick = ()=>{ clearAllFilters(); render(); };
+}
+function renderAccountPage(content){
+  setTitle('Account Intelligence','Selected account • signal breakdown • explainable scoring');
+  const a = selectedAccount();
+  content.innerHTML = `<div class="grid">
+    <div class="card" style="grid-column:span 12">
+      <div class="section-h"><h3>${a.accountName}</h3><div class="right">${a.industry} • ${a.assignedRep} • ${a.strategicAccount?'Strategic account':'Standard account'}</div></div>
+      <div class="grid">
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Competitor presence</div><div class="value" style="font-size:26px;font-weight:900">${a.competitorPresenceScore}</div>${scoreBadgeHTML('cp',a.competitorPresenceScore)}</div>
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Takeout opportunity</div><div class="value" style="font-size:26px;font-weight:900">${a.takeoutOpportunityScore}</div>${scoreBadgeHTML('op',a.takeoutOpportunityScore)}</div>
+        <div class="mini-card" style="grid-column:span 2"><div class="label muted">Confidence</div><div class="value" style="font-size:26px;font-weight:900">${a.confidenceScore}</div>${scoreBadgeHTML('conf',a.confidenceScore)}</div>
+        <div class="mini-card" style="grid-column:span 2"><div class="label muted">Shadow fleet</div><div class="value" style="font-size:26px;font-weight:900">${a.shadowFleet}</div><div class="small muted">Modeled non-Xerox devices</div></div>
+        <div class="mini-card" style="grid-column:span 2"><div class="label muted">Renewal window</div><div class="value" style="font-size:26px;font-weight:900">${a.renewalMonthsRemaining}</div><div class="small muted">Months remaining</div></div>
+      </div>
+    </div>
+    <div class="card" style="grid-column:span 7">
+      <div class="section-h"><h3>Signal breakdown</h3><div class="right">Weighted feature scores</div></div>
+      ${signalRow('Fleet coverage gap', a.metrics.fleetCoverageGapScore, a.metrics.fleetGap + ' devices gap', a.metrics.coverageRatio<.55?'bad':'warn')}
+      ${signalRow('Competitor evidence', a.metrics.competitorEvidenceScore, a.competitorMentionsCount + ' mention signals', a.metrics.competitorEvidenceScore>55?'bad':'warn')}
+      ${signalRow('Volume leakage', a.metrics.volumeLeakageScore, Math.round(a.metrics.volumeLeakage/1000) + 'K pages', a.metrics.volumeLeakageScore>55?'bad':'warn')}
+      ${signalRow('Device age pressure', a.metrics.deviceAgePressureScore, a.avgDeviceAgeMonths + ' months avg age', a.avgDeviceAgeMonths>54?'bad':'warn')}
+      ${signalRow('Service friction', a.metrics.serviceFrictionScore, a.unresolvedServiceIssues + ' unresolved issues', a.unresolvedServiceIssues>3?'bad':'warn')}
+      ${signalRow('Renewal timing', a.metrics.renewalTimingScore, a.renewalMonthsRemaining + ' months', a.renewalMonthsRemaining<12?'bad':'warn')}
+      ${signalRow('Historical competitive loss', a.metrics.historicalCompetitiveLossScore, a.lostToCompetitorCount + ' losses', a.lostToCompetitorCount>1?'warn':'good')}
+      ${signalRow('UCC / external evidence', a.metrics.uccEvidenceScore, a.uccEvidenceFlag ? a.uccVendorMention+' signal present' : 'No explicit filing signal', a.uccEvidenceFlag?'warn':'good')}
+    </div>
+    <div class="card" style="grid-column:span 5">
+      <div class="section-h"><h3>Why this account was flagged</h3><div class="right">Explainability</div></div>
+      <ul class="detail-list">${a.reasons.map(r=>`<li>${r}</li>`).join('')}</ul>
+      <div class="detail-card" style="margin-top:10px"><h3>Recommended next action</h3><p>${a.action}</p></div>
+      <div class="detail-card"><h3>Likely competitor posture</h3><p>${competitors[a.competitorHint].name} is the modeled incumbent threat based on current evidence. Use the takeout pack to drive talk tracks and objection handling.</p></div>
+      <button class="btn primary" id="openPackFromAccount">Build takeout pack</button>
+    </div>
+  </div>`;
+  document.getElementById('openPackFromAccount').onclick = ()=> openPack(a);
+}
+function signalRow(label,val,meta,kind){
+  return `<div style="margin-bottom:10px"><div class="split" style="justify-content:space-between;margin-bottom:4px"><span>${label}</span><span class="muted">${Math.round(val)} • ${meta}</span></div><div class="bar ${kind}"><span style="width:${Math.round(val)}%"></span></div></div>`;
+}
+function renderFleet(content){
+  setTitle('Fleet Shadow Estimator','Expected fleet vs Xerox coverage vs hidden fleet');
+  const list = currentAccounts();
+  const a = selectedAccount();
+  content.innerHTML = `<div class="grid">
+    <div class="card" style="grid-column:span 12">
+      <div class="section-h"><h3>Hidden fleet estimator</h3><div class="right">Selected account: ${a.accountName}</div></div>
+      <div class="grid">
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Estimated total devices</div><div class="value" style="font-size:28px;font-weight:900">${a.estimatedTotalDeviceNeed}</div></div>
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Xerox installed devices</div><div class="value" style="font-size:28px;font-weight:900">${a.xeroxInstalledDevices}</div></div>
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Likely competitor devices</div><div class="value" style="font-size:28px;font-weight:900">${a.shadowFleet}</div></div>
+        <div class="mini-card" style="grid-column:span 3"><div class="label muted">Coverage ratio</div><div class="value" style="font-size:28px;font-weight:900">${fmtPct(a.metrics.coverageRatio*100)}</div></div>
+      </div>
+      <div style="margin-top:14px" class="stack"><div class="xrx" style="width:${a.metrics.coverageRatio*100}%"></div><div class="comp" style="width:${100-(a.metrics.coverageRatio*100)}%"></div></div>
+      <div class="split muted" style="margin-top:6px"><span>Xerox installed</span><span>Likely competitor-controlled</span></div>
+    </div>
+    <div class="card" style="grid-column:span 7">
+      <div class="section-h"><h3>Top hidden fleet accounts</h3><div class="right">Shadow fleet descending</div></div>
+      <table class="table"><thead><tr><th>Account</th><th>Expected fleet</th><th>Xerox fleet</th><th>Shadow fleet</th><th>Coverage ratio</th><th>Industry benchmark</th></tr></thead><tbody>
+        ${list.slice().sort((a,b)=>b.shadowFleet-a.shadowFleet).slice(0,12).map(a=>`<tr data-select="${a.accountId}"><td><b>${a.accountName}</b><div class="small muted">${a.industry}</div></td><td>${a.estimatedTotalDeviceNeed}</td><td>${a.xeroxInstalledDevices}</td><td>${a.shadowFleet}</td><td>${fmtPct(a.metrics.coverageRatio*100)}</td><td>${a.employeeCount} employees / ${a.locationCount} sites</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="card" style="grid-column:span 5">
+      <div class="section-h"><h3>Volume leakage</h3><div class="right">Selected account</div></div>
+      <div class="mini-card"><div class="label muted">Expected print volume</div><div class="value" style="font-size:24px;font-weight:900">${Math.round(a.estimatedTotalPrintVolume/1000)}K</div></div>
+      <div class="mini-card" style="margin-top:10px"><div class="label muted">Xerox-observed volume</div><div class="value" style="font-size:24px;font-weight:900">${Math.round(a.xeroxObservedPrintVolume/1000)}K</div></div>
+      <div class="mini-card" style="margin-top:10px"><div class="label muted">Leakage estimate</div><div class="value" style="font-size:24px;font-weight:900">${Math.round(a.metrics.volumeLeakage/1000)}K</div></div>
+      <div style="margin-top:10px">${signalRow('Leakage severity', a.metrics.volumeLeakageScore, 'Potential work shifting to non-Xerox fleet', a.metrics.volumeLeakageScore>55?'bad':'warn')}</div>
+    </div>
+  </div>`;
+  content.querySelectorAll('[data-select]').forEach(tr=>tr.onclick=()=>{ setSelected(tr.dataset.select); render(); });
+}
+function renderExplain(content){
+  setTitle('Signal Explainability','How the model thinks • why accounts score the way they do');
+  const list=currentAccounts();
+  const strongest = list.filter(a=>a.confidenceScore>=75).slice(0,6);
+  const weakest = list.filter(a=>a.confidenceScore<50).slice(0,6);
+  content.innerHTML = `<div class="grid">
+    <div class="card" style="grid-column:span 12">
+      <div class="section-h"><h3>How the model thinks</h3><div class="right">Multi-signal evidence engine</div></div>
+      <div class="insight">This engine does not require perfect competitor confirmation. It combines weak internal signals — including fleet gap, volume leakage, service friction, renewal timing, and competitor mention evidence — to estimate likely non-Xerox fleet presence. UCC is treated as optional supporting evidence, not the core foundation.</div>
+    </div>
+    <div class="card" style="grid-column:span 7">
+      <div class="section-h"><h3>v1 weighted scoring logic</h3><div class="right">Transparent formula</div></div>
+      ${signalRow('Fleet coverage gap',25,'Primary evidence of unserved fleet','bad')}
+      ${signalRow('CRM / note competitor evidence',20,'Mentions + historical losses + service notes','warn')}
+      ${signalRow('Volume leakage',15,'Expected vs observed print demand','warn')}
+      ${signalRow('Device age pressure',10,'Replacement pressure','good')}
+      ${signalRow('Service friction',10,'Open issues and ticket burden','good')}
+      ${signalRow('Renewal timing',10,'Timing window','warn')}
+      ${signalRow('Historical competitive loss',5,'Prior outcomes','good')}
+      ${signalRow('UCC / external evidence',5,'Optional supporting evidence','good')}
+    </div>
+    <div class="card" style="grid-column:span 5">
+      <div class="section-h"><h3>Confidence logic</h3><div class="right">Source richness</div></div>
+      <ul class="detail-list">
+        <li>Higher confidence when multiple signal families align.</li>
+        <li>Lower confidence when only one weak source is present.</li>
+        <li>Alignment boost when competitor score, fleet gap, and timing all confirm.</li>
+        <li>Service-note or CRM mention evidence lifts confidence further.</li>
+      </ul>
+      <div class="detail-card"><h3>False-positive caution</h3><p>Low Xerox coverage does not guarantee competitor presence. Some accounts may simply be under-penetrated or have lower actual print demand. Use account reviews and rep validation to confirm.</p></div>
+    </div>
+    <div class="card" style="grid-column:span 6">
+      <div class="section-h"><h3>Strongest-evidence accounts</h3><div class="right">High confidence</div></div>
+      <div class="list">${strongest.map(a=>`<div class="item" data-select="${a.accountId}"><div class="avatar">${a.accountName.slice(0,2).toUpperCase()}</div><div><div class="name">${a.accountName}</div><div class="desc">CP ${a.competitorPresenceScore} • Opp ${a.takeoutOpportunityScore} • Confidence ${a.confidenceScore}</div></div><div class="right"><span class="badge good">High</span></div></div>`).join('')}</div>
+    </div>
+    <div class="card" style="grid-column:span 6">
+      <div class="section-h"><h3>Weakest-evidence accounts</h3><div class="right">Use caution</div></div>
+      <div class="list">${weakest.map(a=>`<div class="item" data-select="${a.accountId}"><div class="avatar">${a.accountName.slice(0,2).toUpperCase()}</div><div><div class="name">${a.accountName}</div><div class="desc">CP ${a.competitorPresenceScore} • Opp ${a.takeoutOpportunityScore} • Confidence ${a.confidenceScore}</div></div><div class="right"><span class="badge bad">Low</span></div></div>`).join('')}</div>
+    </div>
+  </div>`;
+  content.querySelectorAll('[data-select]').forEach(el=>el.onclick=()=>{ setSelected(el.dataset.select); setRoute('account'); });
+}
+function renderManager(content){
+  setTitle('Manager View','Rep rollups • concentration • urgency heatmap');
+  const list=currentAccounts();
+  const byRep = reps.map(rep=>{
+    const rows=list.filter(a=>a.assignedRep===rep);
+    const totalValue=rows.reduce((s,a)=>s+a.estimatedDealValue,0);
+    return {rep, count:rows.length, high:rows.filter(a=>a.takeoutOpportunityScore>=80).length, avg:rows.length?Math.round(rows.reduce((s,a)=>s+a.takeoutOpportunityScore,0)/rows.length):0, strategic:rows.filter(a=>a.strategicAccount).length, totalValue};
+  }).sort((a,b)=>b.totalValue-a.totalValue);
+  const urgent = list.filter(a=>a.renewalMonthsRemaining<12);
+  content.innerHTML = `<div class="grid">
+    <div class="card" style="grid-column:span 7">
+      <div class="section-h"><h3>Rep opportunity comparison</h3><div class="right">Filtered book</div></div>
+      <table class="table"><thead><tr><th>Rep</th><th>Accounts</th><th>High priority</th><th>Avg score</th><th>Strategic concentration</th><th>Modeled value</th></tr></thead><tbody>
+        ${byRep.map(r=>`<tr><td><b>${r.rep}</b></td><td>${r.count}</td><td>${r.high}</td><td>${r.avg}</td><td>${r.strategic}</td><td>${fmtMoney(r.totalValue)}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="card" style="grid-column:span 5">
+      <div class="section-h"><h3>Manager insights</h3><div class="right">Auto-generated</div></div>
+      <div class="insight" style="margin-bottom:10px">${byRep[0].rep} carries the largest modeled takeout value in the current filtered book.</div>
+      <div class="insight" style="margin-bottom:10px">${list.filter(a=>a.takeoutOpportunityScore>=80 && a.lastRepContactDays>60).length} high-priority accounts also show stale rep contact timing.</div>
+      <div class="insight" style="margin-bottom:10px">${urgent.length} accounts fall inside a 12-month renewal window, creating urgency for rep and manager attention.</div>
+      <div class="insight">${list.filter(a=>a.strategicAccount && a.takeoutOpportunityScore>=70).length} strategic accounts show meaningful competitive displacement potential.</div>
+    </div>
+    <div class="card" style="grid-column:span 12">
+      <div class="section-h"><h3>Urgency and value matrix</h3><div class="right">High value / high probability accounts deserve immediate manager support</div></div>
+      <div class="quad-grid">
+        ${quadrantHTML('High value / high probability','>$1.5M and CP ≥ 70', list.filter(a=>a.estimatedDealValue>=1500000 && a.competitorPresenceScore>=70))}
+        ${quadrantHTML('High value / lower probability','>$1.5M and CP < 70', list.filter(a=>a.estimatedDealValue>=1500000 && a.competitorPresenceScore<70))}
+        ${quadrantHTML('Lower value / high probability','<$1.5M and CP ≥ 70', list.filter(a=>a.estimatedDealValue<1500000 && a.competitorPresenceScore>=70))}
+        ${quadrantHTML('Lower value / lower probability','<$1.5M and CP < 70', list.filter(a=>a.estimatedDealValue<1500000 && a.competitorPresenceScore<70))}
+      </div>
+    </div>
+  </div>`;
+  content.querySelectorAll('[data-select]').forEach(el=>el.onclick=()=>{ setSelected(el.dataset.select); setRoute('account'); });
+}
+function quadrantHTML(title,tag,rows){
+  return `<div class="quadrant"><h4>${title}</h4><div class="quad-tag">${tag}</div>${rows.slice(0,10).map(a=>`<span class="dot" data-select="${a.accountId}">${a.accountName} • ${a.takeoutOpportunityScore}</span>`).join('') || '<div class="muted small">No accounts in this quadrant.</div>'}</div>`;
+}
+function renderArchitecture(content){
+  setTitle('System Architecture','Signal sources → normalization → probability engine → action layer');
+  content.innerHTML = `<div class="grid">
+    <div class="card" style="grid-column:span 12">
+      <div class="section-h"><h3>Xerox Competitive Takeout Intelligence Engine</h3><div class="right">Target architecture</div></div>
+      <div class="flow">
+        <div class="flow-card"><h4>1. Signal sources</h4><ul><li>CRM / Aurasell data</li><li>Fleet & device telemetry</li><li>Service notes</li><li>Print volume signals</li><li>Account master data</li><li>Historical win/loss</li><li>Optional UCC evidence</li></ul></div>
+        <div class="flow-card"><h4>2. Normalization layer</h4><ul><li>Entity matching</li><li>Standardized account schema</li><li>Missing data handling</li><li>Source confidence weighting</li><li>Time-window alignment</li></ul></div>
+        <div class="flow-card"><h4>3. Evidence layer</h4><ul><li>Fleet coverage gap</li><li>Volume leakage</li><li>Competitor mentions</li><li>Device age pressure</li><li>Service friction</li><li>Renewal timing</li></ul></div>
+        <div class="flow-card"><h4>4. Probability engine</h4><ul><li>Competitor presence score</li><li>Fleet shadow estimate</li><li>Takeout opportunity score</li><li>Confidence score</li></ul></div>
+        <div class="flow-card"><h4>5. Decision layer</h4><ul><li>Rank accounts</li><li>Recommend actions</li><li>Prioritize rep activity</li><li>Escalate manager attention</li><li>Generate takeout pack</li></ul></div>
+      </div>
+    </div>
+    <div class="card" style="grid-column:span 7">
+      <div class="section-h"><h3>v1 weighted scoring formulas</h3><div class="right">Transparent for leadership review</div></div>
+      <div class="detail-card"><h3>Competitor Presence Score</h3><p class="mono">0.25 * Fleet Coverage Gap + 0.20 * Competitor Evidence + 0.15 * Volume Leakage + 0.10 * Device Age Pressure + 0.10 * Service Friction + 0.10 * Renewal Timing + 0.05 * Historical Competitive Loss + 0.05 * UCC Evidence</p></div>
+      <div class="detail-card"><h3>Takeout Opportunity Score</h3><p class="mono">0.40 * Competitor Presence + 0.20 * Revenue Potential + 0.15 * Timing + 0.10 * Strategic Account + 0.10 * Rep Readiness + 0.05 * Confidence</p></div>
+    </div>
+    <div class="card" style="grid-column:span 5">
+      <div class="section-h"><h3>Build path</h3><div class="right">Practical roadmap</div></div>
+      <ul class="detail-list">
+        <li><b>Phase 1:</b> mock data + transparent scoring engine + rep UI</li>
+        <li><b>Phase 2:</b> CRM exports, telemetry snapshots, service-note parsing</li>
+        <li><b>Phase 3:</b> validation loop with reps and managers</li>
+        <li><b>Phase 4:</b> connect into Sierra / Aurasell workflow layer</li>
+      </ul>
+    </div>
+  </div>`;
+}
+function renderDetail(){
+  const detail = document.getElementById('detail');
+  if(!state.detailOpen){ detail.innerHTML=''; return; }
+  const a = selectedAccount();
+  const comp = competitors[a.competitorHint];
+  detail.innerHTML = `
+    <div class="detail-card">
+      <div class="section-h"><h3>${a.accountName}</h3><span class="badge ${badgeBand('op',a.takeoutOpportunityScore)[1]}">${a.takeoutOpportunityScore}</span></div>
+      <p>${a.industry} • ${a.assignedRep} • ${a.strategicAccount?'Strategic':'Standard'} account</p>
+      <div class="split" style="margin-top:10px">
+        ${scoreBadgeHTML('cp',a.competitorPresenceScore)}
+        ${scoreBadgeHTML('conf',a.confidenceScore)}
+      </div>
+      <div style="margin-top:10px" class="stack"><div class="xrx" style="width:${a.metrics.coverageRatio*100}%"></div><div class="comp" style="width:${100-(a.metrics.coverageRatio*100)}%"></div></div>
+      <div class="small muted" style="margin-top:6px">Coverage ratio ${fmtPct(a.metrics.coverageRatio*100)} • Shadow fleet ${a.shadowFleet} devices</div>
+      <div class="split" style="margin-top:10px"><button class="btn primary" id="detailPack">Build pack</button><button class="btn" id="detailAccount">Open account page</button></div>
+    </div>
+    <div class="detail-card">
+      <h3>Flag reasons</h3>
+      <ul class="detail-list">${a.reasons.map(r=>`<li>${r}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-card">
+      <h3>Likely competitor talk track</h3>
+      <ul class="detail-list">${comp.talk.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-card">
+      <h3>Landmines to avoid</h3>
+      <ul class="detail-list">${comp.landmines.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-card">
+      <h3>Manager / rep note</h3>
+      <textarea id="detailNote" placeholder="Local note for this account…"></textarea>
+    </div>`;
+  document.getElementById('detailPack').onclick = ()=> openPack(a);
+  document.getElementById('detailAccount').onclick = ()=> setRoute('account');
+  const noteKey = 'note:'+a.accountId;
+  const ta = document.getElementById('detailNote');
+  ta.value = localStorage.getItem(noteKey) || '';
+  ta.oninput = ()=> localStorage.setItem(noteKey, ta.value);
+}
+function openPack(a){
+  const comp = competitors[a.competitorHint];
+  const scoreColor = v => v>=80?'#ff7272':v>=60?'#ffc85c':'#39d98a';
+  const packScoreBox = (label,val,kind) => `<div class="pack-score-box"><div class="psv" style="color:${scoreColor(val)}">${val}</div><div class="psl">${label}</div><div style="margin-top:6px">${scoreBadgeHTML(kind,val)}</div></div>`;
+  const signalMiniRow = (label,val,color) => `<div class="signal-mini"><span class="sml">${label}</span><div class="smbar"><span style="width:${Math.round(val)}%;background:${color}"></span></div><span class="smv">${Math.round(val)}</span></div>`;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="pack">
+      <div class="pack-header-bar">
+        <div class="pack-logo">X</div>
+        <div style="flex:1">
+          <div style="font-size:18px;font-weight:900">${a.accountName}</div>
+          <div class="muted" style="font-size:13px;margin-top:3px">${a.industry} • ${a.assignedRep} • ${a.strategicAccount?'Strategic account':'Standard account'} • Generated ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>
+        <div>${a.strategicAccount?'<span class="badge bad">Strategic</span>':''}</div>
+      </div>
+
+      <div class="pack-score-row">
+        ${packScoreBox('Competitor Presence',a.competitorPresenceScore,'cp')}
+        ${packScoreBox('Takeout Opportunity',a.takeoutOpportunityScore,'op')}
+        ${packScoreBox('Confidence Score',a.confidenceScore,'conf')}
+        <div class="pack-score-box"><div class="psv">${a.shadowFleet}</div><div class="psl">Shadow Fleet</div><div style="margin-top:6px;font-size:11px;color:var(--muted)">Modeled non-Xerox</div></div>
+        <div class="pack-score-box"><div class="psv">${a.renewalMonthsRemaining}</div><div class="psl">Months to Renewal</div><div style="margin-top:6px"><span class="badge ${a.renewalMonthsRemaining<12?'bad':'warn'}">${a.renewalMonthsRemaining<12?'Urgent':'Monitor'}</span></div></div>
+      </div>
+
+      <div style="margin:10px 0">
+        <div class="small muted" style="margin-bottom:5px">Fleet coverage — Xerox vs estimated competitor footprint</div>
+        <div class="stack" style="height:22px"><div class="xrx" style="width:${a.metrics.coverageRatio*100}%"></div><div class="comp" style="width:${100-(a.metrics.coverageRatio*100)}%"></div></div>
+        <div class="split muted small" style="margin-top:5px"><span>Xerox: ${a.xeroxInstalledDevices} devices (${fmtPct(a.metrics.coverageRatio*100)})</span><span>Hidden fleet est.: ${a.shadowFleet} devices</span></div>
+      </div>
+
+      <hr class="pack-divider">
+
+      <div class="pack-grid">
+        <div class="pack-box">
+          <h4>Why this account is worth attacking</h4>
+          <ul class="detail-list">${a.reasons.length ? a.reasons.map(r=>`<li>${r}</li>`).join('') : '<li>Multiple weak signals align across fleet, timing, and evidence dimensions.</li>'}</ul>
+          <div style="margin-top:12px"><b style="font-size:12px">Recommended action</b><p class="small muted" style="margin-top:4px">${a.action}</p></div>
+        </div>
+        <div class="pack-box">
+          <h4>Signal evidence breakdown</h4>
+          ${signalMiniRow('Fleet coverage gap', a.metrics.fleetCoverageGapScore, '#2f6bff')}
+          ${signalMiniRow('Competitor evidence', a.metrics.competitorEvidenceScore, '#ff7272')}
+          ${signalMiniRow('Volume leakage', a.metrics.volumeLeakageScore, '#ffc85c')}
+          ${signalMiniRow('Device age pressure', a.metrics.deviceAgePressureScore, '#ff9a2b')}
+          ${signalMiniRow('Service friction', a.metrics.serviceFrictionScore, '#ff7272')}
+          ${signalMiniRow('Renewal timing', a.metrics.renewalTimingScore, '#ffc85c')}
+          <div class="split small muted" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)">
+            <span>Estimated deal value</span><b>${fmtMoney(a.estimatedDealValue)}</b>
+          </div>
+          <div class="split small muted" style="margin-top:4px">
+            <span>Likely incumbent</span><b>${comp.name}</b>
+          </div>
+          <div class="split small muted" style="margin-top:4px">
+            <span>UCC / external evidence</span><b>${a.uccEvidenceFlag ? a.uccVendorMention : 'None observed'}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="pack-grid" style="margin-top:12px">
+        <div class="pack-box">
+          <h4>Rep talk track — vs ${comp.name}</h4>
+          <ul class="detail-list">${comp.talk.map(t=>`<li>${t}</li>`).join('')}</ul>
+        </div>
+        <div class="pack-box">
+          <h4>Landmines to avoid</h4>
+          <ul class="detail-list">${comp.landmines.map(t=>`<li>${t}</li>`).join('')}</ul>
+        </div>
+      </div>
+
+      <div class="pack-box" style="margin-top:12px">
+        <h4>Next-step checklist</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px">
+          <div class="small muted">☐ Validate competitor footprint with rep / account team.</div>
+          <div class="small muted">☐ Schedule fleet assessment and device mapping review.</div>
+          <div class="small muted">☐ Build replacement config and business case around hidden fleet and service friction.</div>
+          <div class="small muted">☐ Prepare renewal / displacement plan aligned to ${a.renewalMonthsRemaining}-month timing window.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted2)">
+        Xerox Competitive Takeout Intelligence Engine • Prototype data • Internal use only • Scores are modeled estimates and require rep validation
+      </div>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function showToast(msg, duration=2400){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), duration);
+}
+function clearAllFilters(){
+  state.filters = {rep:'all', industry:'all', strategic:'all', scoreBand:'all', oppBand:'all', confidence:'all', renewal:'all'};
+  state.q = '';
+  const gs = document.getElementById('globalSearch');
+  if(gs) gs.value = '';
+}
+function exportCSV(list){
+  const cols = ['Account','Industry','Rep','Strategic','Competitor Presence Score','Takeout Opportunity Score','Confidence Score','Shadow Fleet','Renewal Months','Est. Deal Value','Competitor Hint','Recommended Action'];
+  const rows = list.map(a=>[
+    `"${a.accountName}"`, a.industry, a.assignedRep, a.strategicAccount?'Yes':'No',
+    a.competitorPresenceScore, a.takeoutOpportunityScore, a.confidenceScore,
+    a.shadowFleet, a.renewalMonthsRemaining, a.estimatedDealValue.toFixed(0),
+    competitors[a.competitorHint].name,
+    `"${a.action.replace(/"/g,'""')}"`
+  ].join(','));
+  const csv = [cols.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = `xerox-takeout-targets-${new Date().toISOString().slice(0,10)}.csv`;
+  link.click(); URL.revokeObjectURL(url);
+  showToast(`✓ Exported ${list.length} accounts to CSV`);
+}
+function bindGlobal(){
+  document.getElementById('globalSearch').oninput = e => { state.q = e.target.value.trim(); render(); };
+  document.getElementById('btnToggleDetail').onclick = ()=>{ state.detailOpen=!state.detailOpen; render(); };
+  document.getElementById('btnQuickPack').onclick = ()=> openPack(selectedAccount());
+  document.getElementById('btnCloseModal').onclick = ()=> document.getElementById('modal').classList.remove('open');
+  document.getElementById('btnExportCSV').onclick = ()=> exportCSV(currentAccounts());
+  document.getElementById('btnCopyPack').onclick = ()=> {
+    const text = document.getElementById('modalBody').innerText;
+    navigator.clipboard.writeText(text).then(()=>showToast('✓ Pack copied to clipboard')).catch(()=>showToast('Copy failed — try selecting manually'));
+  };
+  window.addEventListener('keydown', e=>{
+    const tag=(e.target.tagName||'').toLowerCase();
+    const typing = ['input','textarea','select'].includes(tag) || e.target.isContentEditable;
+    if(e.key==='/' && !typing){ e.preventDefault(); document.getElementById('globalSearch').focus(); }
+    if(e.key.toLowerCase()==='p' && !typing){ openPack(selectedAccount()); }
+    if(e.key.toLowerCase()==='e' && !typing){ exportCSV(currentAccounts()); }
+    if(e.key==='Escape'){ document.getElementById('modal').classList.remove('open'); }
+  });
+}
+bindGlobal();
+render();
+</script>
+</body>
+</html>
