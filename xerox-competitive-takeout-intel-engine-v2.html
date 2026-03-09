@@ -1,0 +1,3000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xerox Competitive Takeout Intelligence Engine</title>
+<style>
+/* =============================================
+   CORE DESIGN SYSTEM & VARIABLES
+   ============================================= */
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2236;
+  --bg-card-hover: #1e2a42;
+  --bg-input: #0f1628;
+  --border-primary: #2a3a5c;
+  --border-accent: #3b82f6;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-green: #10b981;
+  --accent-yellow: #f59e0b;
+  --accent-orange: #f97316;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --transition: all 0.2s ease;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* =============================================
+   HEADER
+   ============================================= */
+.header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-brand { display: flex; align-items: center; gap: 16px; }
+.header-logo {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: #fff;
+}
+.header-title { font-size: 18px; font-weight: 700; color: #fff; }
+.header-subtitle { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+.header-meta { display: flex; align-items: center; gap: 20px; font-size: 12px; color: var(--text-secondary); }
+.header-status {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 12px; background: rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.3); border-radius: 20px;
+  color: var(--accent-green); font-size: 11px; font-weight: 600;
+}
+.header-status::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--accent-green); border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* =============================================
+   TAB NAVIGATION
+   ============================================= */
+.tab-nav {
+  display: flex; background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 0 24px; overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 12px 20px; font-size: 13px; font-weight: 500;
+  color: var(--text-muted); border: none; background: none;
+  cursor: pointer; white-space: nowrap; transition: var(--transition);
+  border-bottom: 2px solid transparent; position: relative;
+}
+.tab-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.03); }
+.tab-btn.active {
+  color: var(--accent-blue); border-bottom-color: var(--accent-blue);
+  background: rgba(59,130,246,0.05);
+}
+.tab-btn .tab-badge {
+  display: inline-block; margin-left: 6px; padding: 1px 6px;
+  background: var(--accent-red); color: #fff; border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+}
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+.main-content { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* =============================================
+   CARDS & PANELS
+   ============================================= */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg); padding: 20px;
+  margin-bottom: 16px; transition: var(--transition);
+}
+.card:hover { border-color: rgba(59,130,246,0.3); }
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 14px; font-weight: 700; color: var(--text-primary);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* =============================================
+   KPI CARDS
+   ============================================= */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg); padding: 20px;
+  transition: var(--transition); position: relative; overflow: hidden;
+}
+.kpi-card:hover { border-color: rgba(59,130,246,0.4); transform: translateY(-1px); }
+.kpi-card .kpi-icon {
+  width: 36px; height: 36px; border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; margin-bottom: 12px;
+}
+.kpi-card .kpi-value { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+.kpi-card .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
+.kpi-card .kpi-delta { font-size: 11px; margin-top: 4px; font-weight: 600; }
+
+/* =============================================
+   BADGES & PILLS
+   ============================================= */
+.badge {
+  display: inline-flex; align-items: center; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.badge-orange { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+.badge-yellow { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+.badge-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.badge-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.badge-purple { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+.badge-cyan { background: rgba(6,182,212,0.15); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); }
+.badge-gray { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+/* =============================================
+   SCORE BARS
+   ============================================= */
+.score-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.score-bar-red { background: linear-gradient(90deg, #ef4444, #f87171); }
+.score-bar-orange { background: linear-gradient(90deg, #f97316, #fb923c); }
+.score-bar-yellow { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.score-bar-green { background: linear-gradient(90deg, #10b981, #34d399); }
+.score-bar-blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.score-bar-purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+/* =============================================
+   TABLES
+   ============================================= */
+.data-table {
+  width: 100%; border-collapse: separate;
+  border-spacing: 0; font-size: 13px;
+}
+.data-table thead th {
+  padding: 10px 14px; text-align: left; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted); border-bottom: 1px solid var(--border-primary);
+  background: rgba(255,255,255,0.02); cursor: pointer;
+  white-space: nowrap; position: sticky; top: 0;
+}
+.data-table thead th:hover { color: var(--text-secondary); }
+.data-table tbody tr {
+  cursor: pointer; transition: var(--transition);
+}
+.data-table tbody tr:hover { background: rgba(59,130,246,0.05); }
+.data-table tbody tr.selected { background: rgba(59,130,246,0.1); border-left: 3px solid var(--accent-blue); }
+.data-table tbody td {
+  padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  white-space: nowrap;
+}
+
+/* =============================================
+   FORMS & INPUTS
+   ============================================= */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 8px 12px; background: var(--bg-input);
+  border: 1px solid var(--border-primary); border-radius: var(--radius);
+  color: var(--text-primary); font-size: 13px; transition: var(--transition);
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+.form-textarea { min-height: 80px; resize: vertical; }
+select.form-select { cursor: pointer; }
+select.form-select option { background: var(--bg-card); color: var(--text-primary); }
+
+/* =============================================
+   BUTTONS
+   ============================================= */
+.btn {
+  padding: 8px 16px; border-radius: var(--radius); font-size: 13px;
+  font-weight: 600; cursor: pointer; border: none; transition: var(--transition);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--accent-blue); color: #fff; }
+.btn-primary:hover { background: #2563eb; }
+.btn-secondary { background: rgba(255,255,255,0.06); color: var(--text-secondary); border: 1px solid var(--border-primary); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+.btn-success { background: var(--accent-green); color: #fff; }
+.btn-success:hover { background: #059669; }
+.btn-danger { background: var(--accent-red); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* =============================================
+   FILTERS BAR
+   ============================================= */
+.filters-bar {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 14px 16px; background: var(--bg-card);
+  border: 1px solid var(--border-primary); border-radius: var(--radius-lg);
+  margin-bottom: 16px; align-items: center;
+}
+.filters-bar .filter-item { flex: 0 0 auto; }
+.filters-bar .filter-item label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 3px; }
+.filters-bar .filter-item select, .filters-bar .filter-item input {
+  padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--border-primary);
+  border-radius: var(--radius); color: var(--text-primary); font-size: 12px; min-width: 130px;
+}
+.search-box {
+  flex: 1; min-width: 200px;
+}
+.search-box input {
+  width: 100%; padding: 8px 12px 8px 32px;
+  background: var(--bg-input); border: 1px solid var(--border-primary);
+  border-radius: var(--radius); color: var(--text-primary); font-size: 13px;
+}
+.search-box { position: relative; }
+.search-box::before {
+  content: '🔍'; position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%); font-size: 12px; z-index: 1;
+}
+
+/* =============================================
+   GRID HELPERS
+   ============================================= */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.flex-center { display: flex; align-items: center; gap: 8px; }
+.gap-16 { gap: 16px; }
+.mt-16 { margin-top: 16px; }
+.mt-8 { margin-top: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-8 { margin-bottom: 8px; }
+
+/* =============================================
+   SCORE DISPLAY
+   ============================================= */
+.score-circle {
+  width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff;
+  position: relative;
+}
+.score-lg { width: 80px; height: 80px; font-size: 26px; }
+
+/* =============================================
+   PROGRESS BAR
+   ============================================= */
+.progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+/* =============================================
+   METER
+   ============================================= */
+.meter-container { text-align: center; padding: 16px; }
+.meter-bar {
+  display: flex; height: 12px; border-radius: 6px; overflow: hidden;
+  background: rgba(255,255,255,0.06); margin: 10px 0;
+}
+.meter-segment { height: 100%; transition: width 0.4s ease; }
+
+/* =============================================
+   ARCHITECTURE FLOW
+   ============================================= */
+.arch-flow { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.arch-layer {
+  width: 100%; max-width: 900px; padding: 20px;
+  background: var(--bg-card); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg); text-align: center;
+}
+.arch-layer-title { font-size: 14px; font-weight: 700; color: var(--accent-blue); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.arch-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.arch-item {
+  padding: 6px 14px; background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2); border-radius: 20px;
+  font-size: 12px; color: var(--text-secondary);
+}
+.arch-arrow { font-size: 24px; color: var(--accent-blue); }
+
+/* =============================================
+   PLAYBOOK
+   ============================================= */
+.playbook-section { margin-bottom: 16px; }
+.playbook-section-title { font-size: 12px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.playbook-list { list-style: none; }
+.playbook-list li { padding: 6px 0; font-size: 13px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; }
+.playbook-list li::before { content: '▸'; color: var(--accent-blue); font-weight: bold; margin-top: 1px; }
+.playbook-check { list-style: none; }
+.playbook-check li { padding: 5px 0; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+
+/* =============================================
+   PROOF GAP
+   ============================================= */
+.proof-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+.proof-item:last-child { border-bottom: none; }
+
+/* =============================================
+   BATTLECARD
+   ============================================= */
+.battlecard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.battlecard-item { padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius); }
+.battlecard-item-title { font-size: 11px; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+
+/* =============================================
+   VALIDATION FORM
+   ============================================= */
+.validation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.validation-status { display: flex; gap: 8px; }
+.validation-status .btn { padding: 4px 12px; font-size: 11px; }
+.validation-status .btn.active-yes { background: var(--accent-green); color: #fff; }
+.validation-status .btn.active-no { background: var(--accent-red); color: #fff; }
+.validation-status .btn.active-unknown { background: var(--accent-yellow); color: #000; }
+
+/* =============================================
+   SAVED FILTER PRESETS
+   ============================================= */
+.preset-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.preset-chip {
+  padding: 5px 14px; background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.25); border-radius: 20px;
+  font-size: 11px; color: #a78bfa; cursor: pointer;
+  transition: var(--transition); font-weight: 500;
+}
+.preset-chip:hover { background: rgba(139,92,246,0.2); border-color: rgba(139,92,246,0.4); }
+.preset-chip.active { background: rgba(139,92,246,0.3); border-color: #8b5cf6; color: #fff; }
+
+/* =============================================
+   PACK MODAL
+   ============================================= */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); z-index: 200;
+  justify-content: center; align-items: center; padding: 40px;
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+  background: var(--bg-secondary); border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg); max-width: 900px; width: 100%;
+  max-height: 85vh; overflow-y: auto; padding: 32px;
+}
+.modal-close {
+  float: right; background: none; border: none; color: var(--text-muted);
+  font-size: 20px; cursor: pointer;
+}
+
+/* =============================================
+   MINI CHART
+   ============================================= */
+.mini-bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; }
+.mini-bar {
+  flex: 1; border-radius: 3px 3px 0 0; transition: height 0.4s ease;
+  min-width: 12px; position: relative;
+}
+.mini-bar:hover { opacity: 0.8; }
+.mini-bar-label { position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--text-muted); white-space: nowrap; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-primary); border-radius: 3px; }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 1200px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .main-content { padding: 16px; }
+  .header { padding: 12px 16px; }
+  .filters-bar { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     HEADER
+     ============================================= -->
+<header class="header">
+  <div class="header-brand">
+    <div class="header-logo">X</div>
+    <div>
+      <div class="header-title">Xerox Competitive Takeout Intelligence Engine</div>
+      <div class="header-subtitle">Enterprise Competitive Displacement Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="header-status">Engine Active</div>
+    <span>v2.1 | 38 Accounts | Last Refresh: Today</span>
+  </div>
+</header>
+
+<!-- =============================================
+     TAB NAVIGATION
+     ============================================= -->
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="takeout">Takeout Targets <span class="tab-badge" id="highPriorityBadge">0</span></button>
+  <button class="tab-btn" data-tab="account">Account Intelligence</button>
+  <button class="tab-btn" data-tab="fleet">Fleet Shadow Estimator</button>
+  <button class="tab-btn" data-tab="explainability">Signal Explainability</button>
+  <button class="tab-btn" data-tab="validation">Rep Validation</button>
+  <button class="tab-btn" data-tab="manager">Manager Console</button>
+  <button class="tab-btn" data-tab="calibration">Model Validation</button>
+  <button class="tab-btn" data-tab="architecture">System Architecture</button>
+</nav>
+
+<div class="main-content">
+
+<!-- =============================================
+     TAB: OVERVIEW
+     ============================================= -->
+<div class="tab-content active" id="tab-overview">
+  <div class="kpi-grid" id="overviewKPIs"></div>
+  <div class="card mb-16">
+    <div class="card-header">
+      <div class="card-title">Executive Intelligence Summary</div>
+      <span class="badge badge-blue">Auto-Generated</span>
+    </div>
+    <div id="execSummary" style="font-size:14px;color:var(--text-secondary);line-height:1.7;"></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Top 10 Takeout Targets</div></div>
+      <div id="topTargetsTable"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Score Distribution</div></div>
+      <div id="scoreDistChart" style="padding:16px;"></div>
+    </div>
+  </div>
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Rep Opportunity Summary</div></div>
+      <div id="repSummaryChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">AI-Generated Insights</div></div>
+      <div id="aiInsights" style="font-size:13px;color:var(--text-secondary);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: TAKEOUT TARGETS
+     ============================================= -->
+<div class="tab-content" id="tab-takeout">
+  <div class="preset-chips" id="filterPresets"></div>
+  <div class="filters-bar" id="takeoutFilters"></div>
+  <div class="card" style="overflow-x:auto;">
+    <div class="card-header">
+      <div class="card-title">Ranked Takeout Opportunities</div>
+      <div class="flex-center">
+        <span id="filteredCount" style="font-size:12px;color:var(--text-muted);"></span>
+        <button class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset Filters</button>
+      </div>
+    </div>
+    <table class="data-table" id="takeoutTable">
+      <thead>
+        <tr>
+          <th data-sort="rank">#</th>
+          <th data-sort="accountName">Account</th>
+          <th data-sort="assignedRep">Rep</th>
+          <th data-sort="industry">Industry</th>
+          <th data-sort="competitorScore">Competitor Score</th>
+          <th data-sort="takeoutScore">Takeout Score</th>
+          <th data-sort="fleetShadow">Shadow Fleet</th>
+          <th data-sort="renewalMonthsRemaining">Renewal</th>
+          <th data-sort="estimatedDealValue">Deal Value</th>
+          <th data-sort="confidenceScore">Confidence</th>
+          <th data-sort="evidenceQuality">Ev. Quality</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="takeoutTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: ACCOUNT INTELLIGENCE
+     ============================================= -->
+<div class="tab-content" id="tab-account">
+  <div id="accountSelector" class="mb-16" style="display:flex;align-items:center;gap:12px;">
+    <label class="form-label" style="margin:0;">Select Account:</label>
+    <select class="form-select" id="accountSelect" style="max-width:400px;" onchange="selectAccount(this.value)"></select>
+  </div>
+  <div id="accountDetail"></div>
+</div>
+
+<!-- =============================================
+     TAB: FLEET SHADOW ESTIMATOR
+     ============================================= -->
+<div class="tab-content" id="tab-fleet">
+  <div class="kpi-grid" id="fleetKPIs"></div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Fleet Shadow Analysis by Account</div></div>
+    <div id="fleetTable"></div>
+  </div>
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Fleet Allocation — Stacked View</div></div>
+      <div id="fleetStackedChart" style="padding:16px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Industry Fleet Gap Comparison</div></div>
+      <div id="industryFleetChart" style="padding:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: SIGNAL EXPLAINABILITY
+     ============================================= -->
+<div class="tab-content" id="tab-explainability">
+  <div class="card mb-16">
+    <div class="card-header"><div class="card-title">How the Model Thinks</div></div>
+    <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+      <p>This system does not require perfect competitor confirmation. It uses internal evidence patterns — including fleet gaps, volume leakage, service friction, renewal timing, and competitor mentions — to estimate likely non-Xerox presence.</p>
+      <p style="margin-top:10px;">The engine combines multiple weak signals together rather than relying on a single source. Higher confidence is assigned when multiple independent signals align. Counter-signals (e.g., recent Xerox wins, stable service) reduce scores to avoid overconfident flagging.</p>
+      <p style="margin-top:10px;color:var(--accent-yellow);">⚠ Caution: Accounts with low evidence quality or few signal sources may produce false positives. Always field-validate before pursuing competitive displacement strategies.</p>
+    </div>
+  </div>
+  <div class="grid-2 mb-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Scoring Model Weights</div></div>
+      <div id="scoringWeightsDisplay"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Data Source Contribution</div></div>
+      <div id="dataSourceContrib"></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Strongest Evidence Accounts</div></div>
+      <div id="strongestEvidence"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Weakest Evidence / Low Confidence</div></div>
+      <div id="weakestEvidence"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: REP VALIDATION
+     ============================================= -->
+<div class="tab-content" id="tab-validation">
+  <div id="validationSelector" class="mb-16" style="display:flex;align-items:center;gap:12px;">
+    <label class="form-label" style="margin:0;">Select Account:</label>
+    <select class="form-select" id="validationAccountSelect" style="max-width:400px;" onchange="loadValidation(this.value)"></select>
+  </div>
+  <div id="validationPanel"></div>
+</div>
+
+<!-- =============================================
+     TAB: MANAGER CONSOLE
+     ============================================= -->
+<div class="tab-content" id="tab-manager">
+  <div class="kpi-grid" id="managerKPIs"></div>
+  <div class="grid-2 mb-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Rep Comparison</div></div>
+      <div id="repComparisonTable"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Manager Escalation Queue</div></div>
+      <div id="escalationQueue"></div>
+    </div>
+  </div>
+  <div class="grid-2 mb-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Forecasted Takeout Pipeline</div></div>
+      <div id="forecastPipeline"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Coverage Gap Overview</div></div>
+      <div id="coverageGap"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Manager Coaching Insights</div></div>
+    <div id="managerInsights" style="font-size:13px;color:var(--text-secondary);"></div>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: MODEL VALIDATION / CALIBRATION
+     ============================================= -->
+<div class="tab-content" id="tab-calibration">
+  <div class="kpi-grid" id="calibrationKPIs"></div>
+  <div class="grid-2 mb-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Validation Outcome Breakdown</div></div>
+      <div id="validationOutcomeChart" style="padding:16px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Precision by Competitor</div></div>
+      <div id="precisionByCompetitor" style="padding:16px;"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Model Validation Log</div></div>
+    <div id="calibrationTable" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<!-- =============================================
+     TAB: SYSTEM ARCHITECTURE
+     ============================================= -->
+<div class="tab-content" id="tab-architecture">
+  <div class="arch-flow" id="archFlow"></div>
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Competitor Presence Score — Formula</div></div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:2;">
+        <div><span style="color:var(--accent-cyan);font-weight:700;">25%</span> Fleet Coverage Gap Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">20%</span> CRM / Notes Competitor Evidence Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">15%</span> Volume Leakage Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">10%</span> Device Age Pressure Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">10%</span> Service Friction Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">10%</span> Renewal Timing Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">5%</span> Historical Competitive Loss Score</div>
+        <div><span style="color:var(--accent-cyan);font-weight:700;">5%</span> UCC / External Evidence Score</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Takeout Opportunity Score — Formula</div></div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:2;">
+        <div><span style="color:var(--accent-purple);font-weight:700;">40%</span> Competitor Presence Score</div>
+        <div><span style="color:var(--accent-purple);font-weight:700;">20%</span> Revenue Potential Score</div>
+        <div><span style="color:var(--accent-purple);font-weight:700;">15%</span> Timing / Renewal Proximity Score</div>
+        <div><span style="color:var(--accent-purple);font-weight:700;">10%</span> Strategic Account Score</div>
+        <div><span style="color:var(--accent-purple);font-weight:700;">10%</span> Rep Readiness Score</div>
+        <div><span style="color:var(--accent-purple);font-weight:700;">5%</span> Confidence Score</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main-content -->
+
+<!-- =============================================
+     TAKEOUT PACK MODAL
+     ============================================= -->
+<div class="modal-overlay" id="packModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closePackModal()">&times;</button>
+    <div id="packContent"></div>
+  </div>
+</div>
+
+<script>
+/* =============================================================================
+   SECTION 1: MOCK DATA GENERATION
+   =============================================================================
+   Generates ~38 realistic accounts with full field set and evidence arrays.
+*/
+
+const REPS = ['Sarah Chen','Marcus Williams','Jennifer Park','David Rodriguez','Michelle Thompson'];
+const INDUSTRIES = ['Legal','Healthcare','Finance','Education','Manufacturing','Real Estate','Nonprofit','Insurance'];
+const COMPETITORS = ['HP','Canon','Ricoh','Konica Minolta','Sharp','Lexmark','Brother'];
+
+// ----------- Evidence Template Library -----------
+const EVIDENCE_TEMPLATES = {
+  telemetry: [
+    {desc:'Device telemetry shows utilization below expected threshold',cat:'fleet_gap',pol:'positive',rel:0.85},
+    {desc:'Print volume telemetry indicates significant unaccounted output',cat:'volume_leakage',pol:'positive',rel:0.9},
+    {desc:'Xerox device count confirmed via network scan',cat:'fleet_gap',pol:'neutral',rel:0.95}
+  ],
+  crm_note: [
+    {desc:'Rep noted competitor equipment visible during site visit',cat:'competitor_mention',pol:'positive',rel:0.75},
+    {desc:'Account contact mentioned evaluating alternatives',cat:'competitor_mention',pol:'positive',rel:0.7},
+    {desc:'CRM note indicates recent Xerox refresh win on 2 devices',cat:'counter_signal',pol:'negative',rel:0.8}
+  ],
+  service_note: [
+    {desc:'Service tech reported non-Xerox equipment on-site',cat:'competitor_mention',pol:'positive',rel:0.8},
+    {desc:'Elevated service tickets suggest fleet stress',cat:'service_friction',pol:'positive',rel:0.7},
+    {desc:'Service notes indicate stable fleet — no issues reported',cat:'counter_signal',pol:'negative',rel:0.75}
+  ],
+  rep_input: [
+    {desc:'Rep confirmed competitor presence in east wing',cat:'competitor_mention',pol:'positive',rel:0.65},
+    {desc:'Rep flagged upcoming budget cycle for new equipment',cat:'renewal_timing',pol:'positive',rel:0.6},
+    {desc:'Rep reports strong Xerox relationship — no competitive pressure',cat:'counter_signal',pol:'negative',rel:0.6}
+  ],
+  inferred_pattern: [
+    {desc:'Fleet coverage ratio suggests non-Xerox devices filling gap',cat:'fleet_gap',pol:'positive',rel:0.5},
+    {desc:'Print volume gap exceeds 40% — likely competitor fleet present',cat:'volume_leakage',pol:'positive',rel:0.55},
+    {desc:'Device age pattern consistent with competitor refresh cycle',cat:'device_age',pol:'positive',rel:0.45}
+  ],
+  ucc_signal: [
+    {desc:'UCC filing detected for office equipment lease',cat:'ucc_evidence',pol:'positive',rel:0.7},
+    {desc:'UCC record shows active lease with identified vendor',cat:'ucc_evidence',pol:'positive',rel:0.8}
+  ],
+  lease_intel: [
+    {desc:'Lease end date approaching within 12 months',cat:'renewal_timing',pol:'positive',rel:0.75},
+    {desc:'Recent contract expansion with Xerox on record',cat:'counter_signal',pol:'negative',rel:0.85}
+  ],
+  observed_volume_gap: [
+    {desc:'Observed print volume accounts for only portion of estimated need',cat:'volume_leakage',pol:'positive',rel:0.65},
+    {desc:'Volume metrics closely match estimated demand — minimal leakage',cat:'counter_signal',pol:'negative',rel:0.7}
+  ]
+};
+
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function randF(min,max){return +(Math.random()*(max-min)+min).toFixed(2);}
+function pick(arr){return arr[rand(0,arr.length-1)];}
+
+// Generate evidence array for one account
+function generateEvidence(acct) {
+  const evidence = [];
+  let eid = 1;
+  const types = Object.keys(EVIDENCE_TEMPLATES);
+  // Determine how many evidence items (3-12 based on account richness)
+  const count = rand(3, 12);
+  const usedDescs = new Set();
+  for (let i = 0; i < count; i++) {
+    const srcType = pick(types);
+    const templates = EVIDENCE_TEMPLATES[srcType];
+    let tmpl = pick(templates);
+    if (usedDescs.has(tmpl.desc)) continue;
+    usedDescs.add(tmpl.desc);
+    evidence.push({
+      id: `EV-${acct.accountId}-${eid++}`,
+      signalType: tmpl.cat,
+      sourceType: srcType,
+      sourceLabel: srcType.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()),
+      description: tmpl.desc,
+      freshnessDays: rand(1, 180),
+      reliabilityWeight: tmpl.rel,
+      polarity: tmpl.pol,
+      value: rand(20, 95),
+      category: tmpl.cat,
+      verified: Math.random() > 0.4
+    });
+  }
+  return evidence;
+}
+
+// ----------- Account Generator -----------
+function generateAccounts() {
+  const names = [
+    'Meridian Legal Group','Pacific Healthcare Systems','Atlas Financial Corp','Summit Education Alliance',
+    'Continental Manufacturing','Bayside Real Estate Holdings','Evergreen Nonprofit Foundation','Liberty Insurance Partners',
+    'Prestige Law Associates','Harbor Medical Center','Pinnacle Capital Management','Metro School District',
+    'Titan Industrial Solutions','Crestview Properties','United Community Services','National Life Underwriters',
+    'Sterling Legal Partners','Valley Health Network','Granite Wealth Advisors','Academy Learning Systems',
+    'Forge Manufacturing Co','Landmark Realty Group','Hope Foundation International','Safeguard Insurance Corp',
+    'Justice Chambers LLP','Riverside Medical Group','Apex Investment Banking','Pioneer Charter Schools',
+    'Ironworks Production Inc','Elite Property Management','Charitable Impact Network','Premier Risk Solutions',
+    'Northgate Legal Counsel','Coastal Wellness Center','Diamond Financial Services','Heritage Academy Trust',
+    'Precision Parts Manufacturing','Skyline Development Corp'
+  ];
+  const accounts = [];
+  names.forEach((name, i) => {
+    const industry = INDUSTRIES[i % INDUSTRIES.length];
+    const empCount = rand(50, 5000);
+    const locCount = rand(1, 12);
+    const totalNeed = Math.max(3, Math.round(empCount / rand(40, 120)));
+    const xeroxDevices = rand(0, Math.min(totalNeed, Math.round(totalNeed * randF(0.15, 0.85))));
+    const estVolume = totalNeed * rand(3000, 12000);
+    const xeroxVolume = Math.round(estVolume * (xeroxDevices / Math.max(totalNeed,1)) * randF(0.7, 1.1));
+    const acct = {
+      accountId: `ACCT-${1000+i}`,
+      accountName: name,
+      industry: industry,
+      assignedRep: pick(REPS),
+      strategicAccount: Math.random() > 0.7,
+      employeeCount: empCount,
+      locationCount: locCount,
+      annualRevenueEstimate: rand(2,200)*100000,
+      estimatedTotalDeviceNeed: totalNeed,
+      xeroxInstalledDevices: xeroxDevices,
+      avgDeviceAgeMonths: rand(6, 72),
+      xeroxObservedPrintVolume: xeroxVolume,
+      estimatedTotalPrintVolume: estVolume,
+      serviceTicketCount: rand(0, 30),
+      unresolvedServiceIssues: rand(0, 8),
+      lastRepContactDays: rand(1, 180),
+      renewalMonthsRemaining: rand(1, 36),
+      openOpportunityCount: rand(0, 5),
+      lostToCompetitorCount: rand(0, 4),
+      competitorMentionsCount: rand(0, 8),
+      serviceNoteMentionsCompetitor: Math.random() > 0.5,
+      uccEvidenceFlag: Math.random() > 0.6,
+      uccVendorMention: Math.random() > 0.5 ? pick(COMPETITORS) : '',
+      repEngagementLevel: pick(['Low','Medium','High']),
+      accountHealthScore: rand(20, 95),
+      estimatedDealValue: rand(10, 500) * 1000,
+      deviceUtilizationRate: randF(0.3, 0.95)
+    };
+    acct.evidence = generateEvidence(acct);
+    accounts.push(acct);
+  });
+  return accounts;
+}
+
+const DATA = generateAccounts();
+
+/* =============================================================================
+   SECTION 2: SCORING ENGINE
+   =============================================================================
+   All scoring formulas implementing the weighted signal model with evidence
+   provenance, freshness, reliability, and counter-signal suppression.
+*/
+
+function clamp(v, min=0, max=100) { return Math.max(min, Math.min(max, Math.round(v))); }
+
+// --- Sub-score functions ---
+function calcFleetCoverageGap(a) {
+  if (a.estimatedTotalDeviceNeed === 0) return 0;
+  const ratio = a.xeroxInstalledDevices / a.estimatedTotalDeviceNeed;
+  return clamp((1 - ratio) * 100);
+}
+
+function calcCRMCompetitorEvidence(a) {
+  let score = 0;
+  score += Math.min(a.competitorMentionsCount * 15, 50);
+  if (a.serviceNoteMentionsCompetitor) score += 25;
+  score += Math.min(a.lostToCompetitorCount * 15, 30);
+  return clamp(score);
+}
+
+function calcVolumeLeakage(a) {
+  if (a.estimatedTotalPrintVolume === 0) return 0;
+  const gap = (a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume) / a.estimatedTotalPrintVolume;
+  return clamp(gap * 120);
+}
+
+function calcDeviceAgePressure(a) {
+  if (a.avgDeviceAgeMonths <= 12) return 10;
+  if (a.avgDeviceAgeMonths <= 24) return 30;
+  if (a.avgDeviceAgeMonths <= 36) return 50;
+  if (a.avgDeviceAgeMonths <= 48) return 70;
+  return clamp(50 + a.avgDeviceAgeMonths * 0.7);
+}
+
+function calcServiceFriction(a) {
+  let score = Math.min(a.serviceTicketCount * 4, 50);
+  score += Math.min(a.unresolvedServiceIssues * 12, 50);
+  return clamp(score);
+}
+
+function calcRenewalTiming(a) {
+  if (a.renewalMonthsRemaining <= 3) return 100;
+  if (a.renewalMonthsRemaining <= 6) return 85;
+  if (a.renewalMonthsRemaining <= 9) return 70;
+  if (a.renewalMonthsRemaining <= 12) return 55;
+  if (a.renewalMonthsRemaining <= 18) return 35;
+  if (a.renewalMonthsRemaining <= 24) return 20;
+  return 10;
+}
+
+function calcHistoricalLoss(a) {
+  return clamp(a.lostToCompetitorCount * 25);
+}
+
+function calcUCCEvidence(a) {
+  let score = 0;
+  if (a.uccEvidenceFlag) score += 50;
+  if (a.uccVendorMention) score += 50;
+  return clamp(score);
+}
+
+// --- Evidence quality and counter-signal logic ---
+function calcEvidenceQuality(a) {
+  const ev = a.evidence || [];
+  if (ev.length === 0) return 20;
+  const avgFresh = ev.reduce((s,e) => s + Math.max(0, 100 - e.freshnessDays), 0) / ev.length;
+  const avgRel = ev.reduce((s,e) => s + e.reliabilityWeight * 100, 0) / ev.length;
+  const pctVerified = ev.filter(e => e.verified).length / ev.length * 100;
+  const catDiversity = new Set(ev.map(e => e.category)).size;
+  const diversityScore = Math.min(catDiversity * 15, 100);
+  return clamp(avgFresh * 0.25 + avgRel * 0.3 + pctVerified * 0.25 + diversityScore * 0.2);
+}
+
+function calcCounterSignalSuppression(a) {
+  const ev = a.evidence || [];
+  const counters = ev.filter(e => e.polarity === 'negative');
+  if (counters.length === 0) return 0;
+  // Average reliability of counter signals * count weight
+  const avgRel = counters.reduce((s,e) => s + e.reliabilityWeight, 0) / counters.length;
+  return clamp(counters.length * 8 * avgRel);
+}
+
+// --- Evidence-weighted scoring modifier ---
+function evidenceModifier(a) {
+  const ev = a.evidence || [];
+  if (ev.length === 0) return 1.0;
+  const positiveEv = ev.filter(e => e.polarity === 'positive');
+  if (positiveEv.length === 0) return 0.7;
+  // Freshness bonus: fresher evidence = higher modifier
+  const freshBonus = positiveEv.reduce((s,e) => {
+    const freshFactor = Math.max(0, 1 - e.freshnessDays / 180);
+    const relFactor = e.reliabilityWeight;
+    const verFactor = e.verified ? 1.1 : 0.9;
+    return s + freshFactor * relFactor * verFactor;
+  }, 0) / positiveEv.length;
+  return Math.max(0.5, Math.min(1.3, 0.7 + freshBonus * 0.6));
+}
+
+// --- Competitor Presence Score (CPS) ---
+function calcCompetitorPresenceScore(a) {
+  const raw = (
+    calcFleetCoverageGap(a) * 0.25 +
+    calcCRMCompetitorEvidence(a) * 0.20 +
+    calcVolumeLeakage(a) * 0.15 +
+    calcDeviceAgePressure(a) * 0.10 +
+    calcServiceFriction(a) * 0.10 +
+    calcRenewalTiming(a) * 0.10 +
+    calcHistoricalLoss(a) * 0.05 +
+    calcUCCEvidence(a) * 0.05
+  );
+  const mod = evidenceModifier(a);
+  const suppression = calcCounterSignalSuppression(a);
+  return clamp(raw * mod - suppression);
+}
+
+// --- Confidence Score ---
+function calcConfidenceScore(a) {
+  const evQuality = calcEvidenceQuality(a);
+  const evCount = Math.min((a.evidence || []).length * 8, 40);
+  const signalAlignment = calcSignalAlignment(a);
+  // Check for validation overrides
+  const vw = getValidationWorkflow(a.accountId);
+  const overrideBonus = vw && vw.repConfidenceOverride > 0 ? 10 : 0;
+  return clamp(evQuality * 0.4 + evCount + signalAlignment * 0.3 + overrideBonus);
+}
+
+function calcSignalAlignment(a) {
+  // How well do multiple signals agree?
+  const scores = [
+    calcFleetCoverageGap(a), calcCRMCompetitorEvidence(a),
+    calcVolumeLeakage(a), calcDeviceAgePressure(a)
+  ];
+  const avg = scores.reduce((s,v)=>s+v,0)/scores.length;
+  const variance = scores.reduce((s,v)=>s+Math.pow(v-avg,2),0)/scores.length;
+  // Lower variance = higher alignment
+  return clamp(100 - Math.sqrt(variance) * 2);
+}
+
+// --- Takeout Opportunity Score ---
+function calcTakeoutScore(a) {
+  const cps = calcCompetitorPresenceScore(a);
+  const revScore = clamp(a.estimatedDealValue / 5000);
+  const timingScore = calcRenewalTiming(a);
+  const strategicScore = a.strategicAccount ? 80 : 30;
+  const repReadiness = a.repEngagementLevel === 'High' ? 80 : a.repEngagementLevel === 'Medium' ? 50 : 20;
+  const conf = calcConfidenceScore(a);
+  return clamp(
+    cps * 0.40 +
+    revScore * 0.20 +
+    timingScore * 0.15 +
+    strategicScore * 0.10 +
+    repReadiness * 0.10 +
+    conf * 0.05
+  );
+}
+
+// --- Fleet Shadow ---
+function calcFleetShadow(a) {
+  return Math.max(0, a.estimatedTotalDeviceNeed - a.xeroxInstalledDevices);
+}
+
+// --- Coverage Ratio ---
+function calcCoverageRatio(a) {
+  if (a.estimatedTotalDeviceNeed === 0) return 1;
+  return +(a.xeroxInstalledDevices / a.estimatedTotalDeviceNeed).toFixed(2);
+}
+
+// --- Score Bands ---
+function cpsBand(score) {
+  if (score >= 81) return {label:'Highly Likely',cls:'badge-red'};
+  if (score >= 61) return {label:'Likely',cls:'badge-orange'};
+  if (score >= 31) return {label:'Possible',cls:'badge-yellow'};
+  return {label:'Low',cls:'badge-green'};
+}
+function takeoutBand(score) {
+  if (score >= 80) return {label:'High Priority',cls:'badge-red'};
+  if (score >= 60) return {label:'Emerging',cls:'badge-orange'};
+  if (score >= 40) return {label:'Watchlist',cls:'badge-yellow'};
+  return {label:'Low Priority',cls:'badge-green'};
+}
+function confBand(score) {
+  if (score >= 70) return {label:'High',cls:'badge-green'};
+  if (score >= 45) return {label:'Moderate',cls:'badge-yellow'};
+  return {label:'Low',cls:'badge-orange'};
+}
+function evQualBand(score) {
+  if (score >= 70) return {label:'Strong',cls:'badge-green'};
+  if (score >= 45) return {label:'Moderate',cls:'badge-yellow'};
+  return {label:'Weak',cls:'badge-orange'};
+}
+
+// --- Enrich all accounts ---
+function enrichAccounts() {
+  DATA.forEach(a => {
+    a.competitorScore = calcCompetitorPresenceScore(a);
+    a.takeoutScore = calcTakeoutScore(a);
+    a.fleetShadow = calcFleetShadow(a);
+    a.coverageRatio = calcCoverageRatio(a);
+    a.confidenceScore = calcConfidenceScore(a);
+    a.evidenceQuality = calcEvidenceQuality(a);
+    a.subScores = {
+      fleetCoverage: calcFleetCoverageGap(a),
+      crmEvidence: calcCRMCompetitorEvidence(a),
+      volumeLeakage: calcVolumeLeakage(a),
+      deviceAge: calcDeviceAgePressure(a),
+      serviceFriction: calcServiceFriction(a),
+      renewalTiming: calcRenewalTiming(a),
+      historicalLoss: calcHistoricalLoss(a),
+      uccEvidence: calcUCCEvidence(a)
+    };
+    a.counterSignalCount = (a.evidence||[]).filter(e=>e.polarity==='negative').length;
+    a.readinessToEngage = calcReadiness(a);
+    a.timingAnalysis = calcTimingAnalysis(a);
+  });
+  DATA.sort((a,b) => b.takeoutScore - a.takeoutScore);
+}
+
+/* =============================================================================
+   SECTION 3: READINESS, TIMING, PROOF GAP, PLAYBOOK ENGINES
+   ============================================================================= */
+
+// --- Readiness to Engage ---
+function calcReadiness(a) {
+  const evQ = calcEvidenceQuality(a);
+  const vw = getValidationWorkflow(a.accountId);
+  let validationBonus = 0;
+  if (vw) {
+    if (vw.incumbentConfirmed === 'yes') validationBonus += 15;
+    if (vw.leaseEndConfirmed === 'yes') validationBonus += 10;
+    if (vw.floorCountCompleted === 'yes') validationBonus += 10;
+    if (vw.workflowPainConfirmed === 'yes') validationBonus += 10;
+    if (vw.buyingCommitteeMapped === 'yes') validationBonus += 10;
+  }
+  const repEng = a.repEngagementLevel === 'High' ? 20 : a.repEngagementLevel === 'Medium' ? 10 : 0;
+  return clamp(evQ * 0.5 + validationBonus + repEng);
+}
+
+function readinessBand(score) {
+  if (score >= 65) return {label:'Strong',cls:'badge-green'};
+  if (score >= 40) return {label:'Moderate',cls:'badge-yellow'};
+  return {label:'Low',cls:'badge-orange'};
+}
+
+// --- Timing Analysis ---
+function calcTimingAnalysis(a) {
+  let score = 0;
+  let reasons = [];
+  if (a.renewalMonthsRemaining <= 6) { score += 30; reasons.push(`Renewal in ${a.renewalMonthsRemaining} months`); }
+  else if (a.renewalMonthsRemaining <= 12) { score += 20; reasons.push(`Renewal within 12 months`); }
+  if (a.lastRepContactDays > 60) { score += 15; reasons.push(`Last rep contact ${a.lastRepContactDays} days ago`); }
+  if (a.unresolvedServiceIssues > 3) { score += 15; reasons.push(`${a.unresolvedServiceIssues} unresolved service issues`); }
+  const volGap = (a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume) / Math.max(a.estimatedTotalPrintVolume,1);
+  if (volGap > 0.3) { score += 10; reasons.push('Significant volume leakage detected'); }
+  if (a.avgDeviceAgeMonths > 42) { score += 10; reasons.push(`Average device age ${a.avgDeviceAgeMonths} months`); }
+  if (a.competitorMentionsCount > 2) { score += 10; reasons.push(`${a.competitorMentionsCount} competitor mentions in records`); }
+  if (a.strategicAccount) { score += 10; reasons.push('Strategic account designation'); }
+  score = clamp(score);
+  let urgency, urgencyCls;
+  if (score >= 70) { urgency = 'Immediate Window'; urgencyCls = 'badge-red'; }
+  else if (score >= 45) { urgency = 'Act Soon'; urgencyCls = 'badge-orange'; }
+  else { urgency = 'Watch'; urgencyCls = 'badge-yellow'; }
+  const summary = reasons.length > 0
+    ? `This account is in an active takeout window because ${reasons.slice(0,3).join(', ').toLowerCase()}.`
+    : 'No immediate timing pressure detected.';
+  return { score, urgency, urgencyCls, summary, reasons };
+}
+
+// --- Proof Gap Analysis ---
+function calcProofGap(a) {
+  const vw = getValidationWorkflow(a.accountId);
+  const known = [];
+  const needed = [];
+  // What We Know
+  if (a.renewalMonthsRemaining <= 12) known.push({item:'Renewal timing',status:'Confirmed'});
+  else known.push({item:'Renewal timing',status:'Partial'});
+  if (a.serviceTicketCount > 5 || a.unresolvedServiceIssues > 2) known.push({item:'Service friction',status:'Confirmed'});
+  if (a.competitorMentionsCount > 0 || a.serviceNoteMentionsCompetitor) known.push({item:'Competitor mention',status: a.competitorMentionsCount > 2 ? 'Confirmed' : 'Partial'});
+  const volGap = (a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume) / Math.max(a.estimatedTotalPrintVolume,1);
+  if (volGap > 0.2) known.push({item:'Observed volume gap',status:'Confirmed'});
+  if (a.fleetShadow > 0) known.push({item:'Shadow fleet estimate',status: a.fleetShadow > 3 ? 'Confirmed' : 'Partial'});
+  if (a.uccEvidenceFlag) known.push({item:'UCC / lease signal',status: a.uccVendorMention ? 'Confirmed' : 'Partial'});
+  if (a.strategicAccount) known.push({item:'Strategic account pressure',status:'Confirmed'});
+  if (a.repEngagementLevel !== 'Low') known.push({item:'Rep engagement',status: a.repEngagementLevel === 'High' ? 'Confirmed' : 'Partial'});
+
+  // What We Still Need
+  if (!vw || vw.incumbentConfirmed !== 'yes') needed.push({item:'Incumbent vendor confirmed',status:'Missing'});
+  if (!vw || vw.leaseEndConfirmed !== 'yes') needed.push({item:'Lease end date confirmed',status:'Missing'});
+  if (!vw || vw.floorCountCompleted !== 'yes') needed.push({item:'Floor-by-floor device count',status:'Missing'});
+  if (!vw || vw.devicePhotosCaptured !== 'yes') needed.push({item:'Photo proof / physical walk',status:'Missing'});
+  if (!vw || vw.customerDissatisfactionCaptured !== 'yes') needed.push({item:'Customer dissatisfaction quote',status:'Missing'});
+  if (!vw || vw.workflowPainConfirmed !== 'yes') needed.push({item:'Workflow pain point confirmed',status:'Missing'});
+  needed.push({item:'Pricing pressure evidence',status:'Missing'});
+  if (!vw || vw.buyingCommitteeMapped !== 'yes') needed.push({item:'Buying committee map',status:'Missing'});
+  needed.push({item:'Competitive equipment model details',status:'Missing'});
+
+  // Update statuses from validation
+  if (vw) {
+    if (vw.incumbentConfirmed === 'yes') { moveToKnown(needed, known, 'Incumbent vendor confirmed'); }
+    if (vw.leaseEndConfirmed === 'yes') { moveToKnown(needed, known, 'Lease end date confirmed'); }
+    if (vw.floorCountCompleted === 'yes') { moveToKnown(needed, known, 'Floor-by-floor device count'); }
+    if (vw.devicePhotosCaptured === 'yes') { moveToKnown(needed, known, 'Photo proof / physical walk'); }
+    if (vw.customerDissatisfactionCaptured === 'yes') { moveToKnown(needed, known, 'Customer dissatisfaction quote'); }
+    if (vw.workflowPainConfirmed === 'yes') { moveToKnown(needed, known, 'Workflow pain point confirmed'); }
+    if (vw.buyingCommitteeMapped === 'yes') { moveToKnown(needed, known, 'Buying committee map'); }
+  }
+  return { known, needed };
+}
+
+function moveToKnown(needed, known, item) {
+  const idx = needed.findIndex(n => n.item === item);
+  if (idx > -1) {
+    needed.splice(idx, 1);
+    if (!known.find(k => k.item === item)) known.push({item, status:'Confirmed'});
+  }
+}
+
+// --- Playbook Generator ---
+function generatePlaybook(a) {
+  const cps = a.competitorScore;
+  const tos = a.takeoutScore;
+  const conf = a.confidenceScore;
+  const evQ = a.evidenceQuality;
+  const timing = a.timingAnalysis;
+  const readiness = a.readinessToEngage;
+
+  let playbookName, objective, whyNow, urgency, dueInDays;
+  let requiredEvidence = [], recommendedActions = [], discoveryQuestions = [], riskToWin = [];
+  let successMetric, escalationNeeded = false;
+
+  if (tos >= 80) {
+    playbookName = 'Aggressive Competitive Displacement';
+    objective = 'Initiate full competitive takeout strategy with validated fleet assessment';
+    dueInDays = 7; urgency = 'Critical';
+    escalationNeeded = a.strategicAccount;
+  } else if (tos >= 60) {
+    playbookName = 'Emerging Opportunity Pursuit';
+    objective = 'Validate competitor footprint and build displacement business case';
+    dueInDays = 14; urgency = 'High';
+  } else if (tos >= 40) {
+    playbookName = 'Active Monitoring & Evidence Collection';
+    objective = 'Gather additional proof points to confirm competitive presence';
+    dueInDays = 30; urgency = 'Medium';
+  } else {
+    playbookName = 'Passive Watch';
+    objective = 'Maintain account health and monitor for competitive signals';
+    dueInDays = 60; urgency = 'Low';
+  }
+
+  whyNow = timing.summary;
+
+  // Required evidence based on proof gaps
+  const pg = calcProofGap(a);
+  requiredEvidence = pg.needed.slice(0,5).map(n => n.item);
+
+  // Recommended actions - context-sensitive
+  if (tos >= 80) {
+    recommendedActions = [
+      'Schedule fleet walk within 5 business days',
+      'Confirm incumbent vendor on at least 3 devices',
+      'Capture floor-by-floor device count',
+      'Pull last 12 months of service exceptions',
+      'Prepare 1-page cost-out and workflow comparison',
+      'Build replacement configuration proposal'
+    ];
+    if (a.strategicAccount) recommendedActions.push('Escalate to manager for strategic account support');
+    if (a.renewalMonthsRemaining <= 6) recommendedActions.push('Validate lease end month with office manager');
+  } else if (tos >= 60) {
+    recommendedActions = [
+      'Validate competitor footprint via site visit',
+      'Increase contact cadence to bi-weekly',
+      'Gather floor / department intelligence',
+      'Prepare upgrade recommendation',
+      'Request service history analysis'
+    ];
+    if (conf < 50) recommendedActions.push('Prioritize proof collection before pursuit');
+  } else if (tos >= 40) {
+    recommendedActions = [
+      'Monitor account for new competitive signals',
+      'Collect additional evidence during next service visit',
+      'Review service issues for competitive indicators',
+      'Verify renewal timing with account contact'
+    ];
+  } else {
+    recommendedActions = [
+      'Passive monitoring — no immediate action required',
+      'Flag for review at next quarterly pipeline meeting'
+    ];
+  }
+
+  // Discovery questions
+  discoveryQuestions = [
+    'What equipment besides Xerox do you currently use for printing and copying?',
+    'Are you satisfied with your current fleet service and reliability?',
+    'When does your current equipment lease expire?',
+    'Have you evaluated any changes to your print infrastructure recently?',
+    'What are your top workflow pain points related to document management?'
+  ];
+  if (a.competitorMentionsCount > 0) discoveryQuestions.push('I noticed references to other vendors — can you walk me through your current fleet setup?');
+
+  // Risk to win
+  if (a.repEngagementLevel === 'Low') riskToWin.push('Low rep engagement may delay pursuit');
+  if (a.lastRepContactDays > 90) riskToWin.push('Stale contact relationship — re-engagement risk');
+  if (conf < 40) riskToWin.push('Low confidence — may be false positive');
+  if (a.counterSignalCount > 2) riskToWin.push('Multiple counter-signals present — validate before investing resources');
+  if (a.accountHealthScore < 40) riskToWin.push('Poor account health could complicate displacement discussion');
+  if (riskToWin.length === 0) riskToWin.push('No major risks identified — proceed with standard approach');
+
+  successMetric = tos >= 60
+    ? 'Validated competitor presence + active pipeline opportunity created within 30 days'
+    : 'Additional evidence collected to raise confidence above 60%';
+
+  return {
+    playbookName, objective, whyNow, owner: a.assignedRep,
+    dueInDays, urgency, requiredEvidence, recommendedActions,
+    discoveryQuestions, riskToWin, successMetric, escalationNeeded
+  };
+}
+
+/* =============================================================================
+   SECTION 4: COMPETITOR BATTLECARDS
+   ============================================================================= */
+const BATTLECARDS = {
+  'HP': {
+    strengths: ['Strong brand recognition','Wide product portfolio','Aggressive pricing on A4','Strong IT channel partnerships'],
+    weaknesses: ['Weaker managed print services','Higher TCO on enterprise fleet','Less robust service network for MFPs','Print quality gaps on production devices'],
+    counterPositioning: ['Emphasize Xerox managed services advantage','Highlight total cost of ownership analysis','Showcase ConnectKey technology platform','Position workflow automation superiority'],
+    objections: ['HP is cheaper upfront','We already use HP PCs so it makes sense','HP has better availability'],
+    discoveryQuestions: ['How are you managing your HP fleet centrally?','What is your actual cost per page with HP supplies?','Have you evaluated managed print services?'],
+    riskFactors: ['HP may counter with aggressive discounting','IT department may have HP enterprise agreement'],
+    proofNeeded: ['TCO comparison over 36 months','Service response time comparison','Workflow capability gap analysis'],
+    doNotSay: ['Never disparage HP quality directly','Avoid claiming HP devices are unreliable without proof']
+  },
+  'Canon': {
+    strengths: ['Strong in production print','Good image quality reputation','Established dealer channel','Strong in education and government'],
+    weaknesses: ['Fragmented service delivery via dealers','Higher complexity in fleet management','Less robust cloud integration','Weaker analytics platform'],
+    counterPositioning: ['Highlight Xerox direct service advantage','Demonstrate cloud-first workflow capabilities','Show fleet management simplicity','Emphasize security posture'],
+    objections: ['Canon image quality is better','Our Canon dealer gives great service','Canon production equipment is industry standard'],
+    discoveryQuestions: ['Who provides your Canon service — dealer or direct?','How do you manage security across your Canon fleet?','What cloud workflows are you using with Canon devices?'],
+    riskFactors: ['Strong dealer relationships can be sticky','Canon may offer production bundle discounts'],
+    proofNeeded: ['Security feature comparison','Cloud workflow capability matrix','Service SLA comparison'],
+    doNotSay: ['Do not underestimate Canon production capabilities','Avoid blanket claims about dealer service quality']
+  },
+  'Ricoh': {
+    strengths: ['Strong managed services offering','Good enterprise relationships','Solid mid-range MFP lineup','IT services cross-sell capability'],
+    weaknesses: ['Brand perception declining in some markets','Higher pricing on comparable devices','Slower innovation cycle','Complex pricing models'],
+    counterPositioning: ['Position Xerox innovation leadership','Highlight simpler pricing and transparency','Demonstrate superior ConnectKey app ecosystem','Show competitive TCO advantage'],
+    objections: ['Ricoh manages our entire fleet already','Ricoh includes IT services we need','We have a long-term Ricoh relationship'],
+    discoveryQuestions: ['What does your Ricoh managed services agreement actually cover?','Are you getting the innovation and automation you expected?','How transparent is your Ricoh pricing structure?'],
+    riskFactors: ['Deep managed services contracts are hard to displace','Ricoh may bundle IT services to retain account'],
+    proofNeeded: ['Service level comparison','Innovation roadmap comparison','Pricing transparency analysis'],
+    doNotSay: ['Do not dismiss Ricoh managed services capability','Avoid aggressive tactics on long-term Ricoh accounts without executive sponsor']
+  },
+  'Konica Minolta': {
+    strengths: ['Competitive mid-range pricing','Growing IT services business','Strong color quality','Good dealer network'],
+    weaknesses: ['Weaker brand in enterprise accounts','Less robust cloud platform','Smaller service footprint for direct service','Limited production print range'],
+    counterPositioning: ['Emphasize Xerox enterprise scale','Highlight broader production portfolio','Demonstrate superior security features','Show managed services breadth'],
+    objections: ['Konica Minolta gave us a great deal','Their color output is excellent','We use their IT services too'],
+    discoveryQuestions: ['How are you managing fleet security with Konica Minolta?','What happens when you need service outside business hours?','Are you satisfied with their cloud and mobile capabilities?'],
+    riskFactors: ['May offer aggressive bundled pricing','IT services cross-sell creates stickiness'],
+    proofNeeded: ['Enterprise capability comparison','Security audit comparison','After-hours service comparison'],
+    doNotSay: ['Do not underestimate their color quality','Avoid criticizing dealer relationships directly']
+  },
+  'Sharp': {
+    strengths: ['Competitive pricing','Good display technology integration','Strong in SMB market','Simple product lineup'],
+    weaknesses: ['Limited enterprise managed services','Weaker workflow automation','Smaller service network','Less robust security features'],
+    counterPositioning: ['Position Xerox as enterprise-grade upgrade','Highlight workflow automation gap','Demonstrate security feature superiority','Show managed services scalability'],
+    objections: ['Sharp is much cheaper','Sharp devices are simple and reliable','We only need basic print functionality'],
+    discoveryQuestions: ['How are you handling document workflows beyond basic printing?','What security measures do you have on your Sharp fleet?','Are you planning any digital transformation initiatives?'],
+    riskFactors: ['Price-sensitive accounts may resist Xerox premium','Sharp simplicity may be valued over features'],
+    proofNeeded: ['Feature value analysis','Security gap assessment','Workflow ROI calculation'],
+    doNotSay: ['Do not position Sharp as low-quality — they serve a purpose','Avoid feature-dumping on price-sensitive prospects']
+  },
+  'Lexmark': {
+    strengths: ['Good enterprise relationships via legacy installs','Cloud printing capabilities','Competitive A4 lineup','Strong in healthcare'],
+    weaknesses: ['Reduced market presence','Limited dealer channel','Narrower product portfolio','Brand perception challenges'],
+    counterPositioning: ['Highlight Xerox broader portfolio','Demonstrate continued innovation investment','Show superior service coverage','Emphasize long-term vendor viability'],
+    objections: ['Lexmark has been reliable for us','They offer good cloud printing','We got a great renewal deal from Lexmark'],
+    discoveryQuestions: ['Are you confident in Lexmark long-term product roadmap?','How broad is your Lexmark service coverage?','What happens if you need A3 or production devices?'],
+    riskFactors: ['Legacy relationships create inertia','Aggressive renewal pricing to retain accounts'],
+    proofNeeded: ['Product roadmap comparison','Service coverage map','Portfolio breadth analysis'],
+    doNotSay: ['Do not question Lexmark viability without facts','Avoid FUD tactics about ownership changes']
+  },
+  'Brother': {
+    strengths: ['Very competitive pricing','Good for small/home office','Simple setup','Reliable basic devices'],
+    weaknesses: ['Not enterprise-grade','No managed services','Limited security features','No production capability'],
+    counterPositioning: ['Position as enterprise upgrade path','Highlight total fleet management benefits','Demonstrate security and compliance needs','Show workflow automation ROI'],
+    objections: ['Brother is 1/3 the price','We just need basic printers','Brother is easy to buy and set up'],
+    discoveryQuestions: ['How are you managing security and compliance on Brother devices?','What is your actual cost per page including supplies?','How do you handle fleet monitoring and maintenance?'],
+    riskFactors: ['Extreme price sensitivity','Decentralized purchasing may bypass IT'],
+    proofNeeded: ['TCO analysis including supplies and maintenance','Security compliance gap assessment','Fleet management ROI'],
+    doNotSay: ['Do not dismiss Brother for its market segment','Avoid condescending tone about small-office equipment']
+  }
+};
+function getDefaultBattlecard() {
+  return {
+    strengths: ['Unknown competitor — limited intelligence available'],
+    weaknesses: ['Requires field investigation to assess'],
+    counterPositioning: ['Focus on Xerox value proposition fundamentals'],
+    objections: ['Generic competitive resistance expected'],
+    discoveryQuestions: ['What vendor equipment are you currently using?','What drove your original vendor selection?'],
+    riskFactors: ['Insufficient competitive intelligence'],
+    proofNeeded: ['Identify competitor vendor and model details'],
+    doNotSay: ['Do not make assumptions about unknown competitors']
+  };
+}
+
+function getAccountBattlecard(a) {
+  // Determine likely competitor
+  let competitor = a.uccVendorMention || '';
+  if (!competitor) {
+    // Infer from evidence
+    const ev = (a.evidence || []).find(e => e.category === 'competitor_mention' && e.polarity === 'positive');
+    if (ev) competitor = pick(COMPETITORS);
+  }
+  if (!competitor) competitor = 'Unknown';
+  const card = BATTLECARDS[competitor] || getDefaultBattlecard();
+  return { competitor, ...card };
+}
+
+
+/* =============================================================================
+   SECTION 5: VALIDATION WORKFLOW (localStorage)
+   ============================================================================= */
+
+function getValidationWorkflow(accountId) {
+  try {
+    const data = localStorage.getItem(`vw_${accountId}`);
+    return data ? JSON.parse(data) : null;
+  } catch(e) { return null; }
+}
+
+function saveValidationWorkflow(accountId, data) {
+  localStorage.setItem(`vw_${accountId}`, JSON.stringify(data));
+  // Re-enrich after validation changes
+  enrichAccounts();
+}
+
+function resetValidationWorkflow(accountId) {
+  localStorage.removeItem(`vw_${accountId}`);
+  enrichAccounts();
+}
+
+function getModelValidation(accountId) {
+  try {
+    const data = localStorage.getItem(`mv_${accountId}`);
+    return data ? JSON.parse(data) : null;
+  } catch(e) { return null; }
+}
+
+function saveModelValidation(accountId, data) {
+  localStorage.setItem(`mv_${accountId}`, JSON.stringify(data));
+}
+
+function calcValidationCompleteness(accountId) {
+  const vw = getValidationWorkflow(accountId);
+  if (!vw) return 0;
+  const fields = ['incumbentConfirmed','leaseEndConfirmed','floorCountCompleted',
+    'devicePhotosCaptured','workflowPainConfirmed','customerDissatisfactionCaptured','buyingCommitteeMapped'];
+  const completed = fields.filter(f => vw[f] === 'yes').length;
+  return Math.round(completed / fields.length * 100);
+}
+
+/* =============================================================================
+   SECTION 6: RENDERING HELPERS
+   ============================================================================= */
+
+function scoreColor(score) {
+  if (score >= 80) return 'var(--accent-red)';
+  if (score >= 60) return 'var(--accent-orange)';
+  if (score >= 40) return 'var(--accent-yellow)';
+  return 'var(--accent-green)';
+}
+
+function scoreBarClass(score) {
+  if (score >= 80) return 'score-bar-red';
+  if (score >= 60) return 'score-bar-orange';
+  if (score >= 40) return 'score-bar-yellow';
+  return 'score-bar-green';
+}
+
+function renderBadge(band) {
+  return `<span class="badge ${band.cls}">${band.label}</span>`;
+}
+
+function renderScoreBar(score, width='100%') {
+  return `<div class="score-bar-container" style="width:${width}">
+    <div class="score-bar-fill ${scoreBarClass(score)}" style="width:${score}%"></div>
+  </div>`;
+}
+
+function renderScoreCircle(score, size='') {
+  return `<div class="score-circle ${size}" style="background:${scoreColor(score)}">${score}</div>`;
+}
+
+function renderMiniBar(value, max, color, label) {
+  const h = max > 0 ? (value / max * 50) : 0;
+  return `<div class="mini-bar" style="height:${Math.max(4,h)}px;background:${color};" title="${label}: ${value}">
+    <span class="mini-bar-label">${label}</span>
+  </div>`;
+}
+
+function formatCurrency(v) {
+  if (v >= 1000000) return '$' + (v/1000000).toFixed(1) + 'M';
+  if (v >= 1000) return '$' + (v/1000).toFixed(0) + 'K';
+  return '$' + v;
+}
+
+function proofStatusBadge(status) {
+  if (status === 'Confirmed') return '<span class="badge badge-green" style="font-size:10px;">Confirmed</span>';
+  if (status === 'Partial') return '<span class="badge badge-yellow" style="font-size:10px;">Partial</span>';
+  return '<span class="badge badge-orange" style="font-size:10px;">Missing</span>';
+}
+
+/* =============================================================================
+   SECTION 7: TAB NAVIGATION
+   ============================================================================= */
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* =============================================================================
+   SECTION 8: FILTER STATE AND LOGIC
+   ============================================================================= */
+
+let currentFilters = {
+  search: '', rep: '', industry: '', scoreBand: '', opportunityBand: '',
+  confidenceBand: '', evQualityBand: '', renewalWindow: '', strategicOnly: false,
+  staleContactOnly: false, highValueOnly: false, counterSignalPresent: '',
+  timingUrgency: ''
+};
+let currentSort = { field: 'takeoutScore', dir: 'desc' };
+
+const FILTER_PRESETS = [
+  { name: 'Strategic + High Conf + <12mo', filters: { strategicOnly: true, confidenceBand: 'high', renewalWindow: '12' } },
+  { name: 'High Value / Low Proof', filters: { highValueOnly: true, evQualityBand: 'weak' } },
+  { name: 'Immediate Window', filters: { timingUrgency: 'Immediate Window' } },
+  { name: 'Ricoh Displacement', filters: { search: 'Ricoh' } },
+  { name: 'Manager Escalation Queue', filters: { strategicOnly: true, scoreBand: 'high' } },
+  { name: 'Stale Contact / High Opp', filters: { staleContactOnly: true, opportunityBand: 'high' } }
+];
+
+function applyFilters() {
+  let filtered = [...DATA];
+  const f = currentFilters;
+  if (f.search) {
+    const s = f.search.toLowerCase();
+    filtered = filtered.filter(a =>
+      a.accountName.toLowerCase().includes(s) ||
+      a.assignedRep.toLowerCase().includes(s) ||
+      a.industry.toLowerCase().includes(s) ||
+      (a.uccVendorMention||'').toLowerCase().includes(s) ||
+      (a.evidence||[]).some(e => e.description.toLowerCase().includes(s) || e.sourceType.toLowerCase().includes(s))
+    );
+  }
+  if (f.rep) filtered = filtered.filter(a => a.assignedRep === f.rep);
+  if (f.industry) filtered = filtered.filter(a => a.industry === f.industry);
+  if (f.scoreBand) {
+    if (f.scoreBand === 'high') filtered = filtered.filter(a => a.competitorScore >= 81);
+    else if (f.scoreBand === 'likely') filtered = filtered.filter(a => a.competitorScore >= 61 && a.competitorScore <= 80);
+    else if (f.scoreBand === 'possible') filtered = filtered.filter(a => a.competitorScore >= 31 && a.competitorScore <= 60);
+    else if (f.scoreBand === 'low') filtered = filtered.filter(a => a.competitorScore <= 30);
+  }
+  if (f.opportunityBand) {
+    if (f.opportunityBand === 'high') filtered = filtered.filter(a => a.takeoutScore >= 80);
+    else if (f.opportunityBand === 'emerging') filtered = filtered.filter(a => a.takeoutScore >= 60 && a.takeoutScore <= 79);
+    else if (f.opportunityBand === 'watchlist') filtered = filtered.filter(a => a.takeoutScore >= 40 && a.takeoutScore <= 59);
+    else if (f.opportunityBand === 'low') filtered = filtered.filter(a => a.takeoutScore < 40);
+  }
+  if (f.confidenceBand) {
+    if (f.confidenceBand === 'high') filtered = filtered.filter(a => a.confidenceScore >= 70);
+    else if (f.confidenceBand === 'moderate') filtered = filtered.filter(a => a.confidenceScore >= 45 && a.confidenceScore < 70);
+    else if (f.confidenceBand === 'low') filtered = filtered.filter(a => a.confidenceScore < 45);
+  }
+  if (f.evQualityBand) {
+    if (f.evQualityBand === 'strong') filtered = filtered.filter(a => a.evidenceQuality >= 70);
+    else if (f.evQualityBand === 'moderate') filtered = filtered.filter(a => a.evidenceQuality >= 45 && a.evidenceQuality < 70);
+    else if (f.evQualityBand === 'weak') filtered = filtered.filter(a => a.evidenceQuality < 45);
+  }
+  if (f.renewalWindow) {
+    const months = parseInt(f.renewalWindow);
+    filtered = filtered.filter(a => a.renewalMonthsRemaining <= months);
+  }
+  if (f.strategicOnly) filtered = filtered.filter(a => a.strategicAccount);
+  if (f.staleContactOnly) filtered = filtered.filter(a => a.lastRepContactDays > 60);
+  if (f.highValueOnly) filtered = filtered.filter(a => a.estimatedDealValue >= 150000);
+  if (f.counterSignalPresent === 'yes') filtered = filtered.filter(a => a.counterSignalCount > 0);
+  else if (f.counterSignalPresent === 'no') filtered = filtered.filter(a => a.counterSignalCount === 0);
+  if (f.timingUrgency) filtered = filtered.filter(a => a.timingAnalysis.urgency === f.timingUrgency);
+
+  // Sort
+  filtered.sort((a,b) => {
+    let va = a[currentSort.field], vb = b[currentSort.field];
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if (currentSort.dir === 'asc') return va > vb ? 1 : va < vb ? -1 : 0;
+    return va < vb ? 1 : va > vb ? -1 : 0;
+  });
+  return filtered;
+}
+
+function resetFilters() {
+  currentFilters = { search:'',rep:'',industry:'',scoreBand:'',opportunityBand:'',
+    confidenceBand:'',evQualityBand:'',renewalWindow:'',strategicOnly:false,
+    staleContactOnly:false,highValueOnly:false,counterSignalPresent:'',timingUrgency:'' };
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  renderTakeoutFilters();
+  renderTakeoutTable();
+}
+
+function applyPreset(idx) {
+  resetFilters();
+  const preset = FILTER_PRESETS[idx];
+  Object.assign(currentFilters, preset.filters);
+  document.querySelectorAll('.preset-chip').forEach((c,i) => c.classList.toggle('active', i===idx));
+  renderTakeoutFilters();
+  renderTakeoutTable();
+}
+
+
+/* =============================================================================
+   SECTION 9: RENDER — OVERVIEW TAB
+   ============================================================================= */
+
+function renderOverview() {
+  const totalAccounts = DATA.length;
+  const highPriority = DATA.filter(a => a.takeoutScore >= 80).length;
+  const avgCPS = Math.round(DATA.reduce((s,a) => s + a.competitorScore, 0) / totalAccounts);
+  const totalShadow = DATA.reduce((s,a) => s + a.fleetShadow, 0);
+  const renewalUnder12 = DATA.filter(a => a.renewalMonthsRemaining <= 12).length;
+  const strategicAtRisk = DATA.filter(a => a.strategicAccount && a.takeoutScore >= 60).length;
+  const avgConf = Math.round(DATA.reduce((s,a) => s + a.confidenceScore, 0) / totalAccounts);
+  const totalValue = DATA.filter(a => a.takeoutScore >= 60).reduce((s,a) => s + a.estimatedDealValue, 0);
+
+  document.getElementById('highPriorityBadge').textContent = highPriority;
+
+  const kpis = [
+    {icon:'📊',color:'var(--accent-blue)',value:totalAccounts,label:'Accounts Analyzed'},
+    {icon:'🎯',color:'var(--accent-red)',value:highPriority,label:'High Priority Takeout'},
+    {icon:'📈',color:'var(--accent-orange)',value:avgCPS,label:'Avg Competitor Score'},
+    {icon:'🖨️',color:'var(--accent-purple)',value:totalShadow,label:'Est. Non-Xerox Fleet'},
+    {icon:'⏰',color:'var(--accent-yellow)',value:renewalUnder12,label:'Renewal < 12 Months'},
+    {icon:'⭐',color:'var(--accent-cyan)',value:strategicAtRisk,label:'Strategic at Risk'},
+    {icon:'🔒',color:'var(--accent-green)',value:avgConf+'%',label:'Avg Confidence Score'},
+    {icon:'💰',color:'var(--accent-pink)',value:formatCurrency(totalValue),label:'Modeled Pipeline Value'}
+  ];
+
+  document.getElementById('overviewKPIs').innerHTML = kpis.map(k => `
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:${k.color}22;color:${k.color};">${k.icon}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-label">${k.label}</div>
+    </div>
+  `).join('');
+
+  // Executive summary
+  const highCPSAccounts = DATA.filter(a => a.competitorScore >= 80);
+  const highCPSShadow = highCPSAccounts.reduce((s,a) => s + a.fleetShadow, 0);
+  const highCPSValue = highCPSAccounts.reduce((s,a) => s + a.estimatedDealValue, 0);
+  document.getElementById('execSummary').innerHTML = `
+    <p><strong>${highCPSAccounts.length} accounts</strong> show high probability of non-Xerox fleet presence, representing an estimated <strong>${highCPSShadow} competitive displacement units</strong> and approximately <strong>${formatCurrency(highCPSValue)}</strong> in modeled opportunity value.</p>
+    <p style="margin-top:8px;">${renewalUnder12} accounts have renewal windows inside 12 months. ${strategicAtRisk} strategic accounts are flagged for competitive displacement opportunity. Average model confidence across the analyzed book is <strong>${avgConf}%</strong>.</p>
+    <p style="margin-top:8px;font-size:12px;color:var(--text-muted);">⚠ All values are modeled estimates. Field validation is recommended before formal competitive pursuit.</p>
+  `;
+
+  // Top 10 targets
+  const top10 = DATA.slice(0, 10);
+  document.getElementById('topTargetsTable').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Account</th><th>Takeout</th><th>Shadow</th><th>Value</th><th>Urgency</th></tr></thead>
+      <tbody>${top10.map((a,i) => `
+        <tr onclick="navigateToAccount('${a.accountId}')" style="cursor:pointer;">
+          <td style="color:var(--text-muted);">${i+1}</td>
+          <td><strong>${a.accountName}</strong><br><span style="font-size:11px;color:var(--text-muted);">${a.assignedRep}</span></td>
+          <td>${renderBadge(takeoutBand(a.takeoutScore))} <span style="font-size:12px;color:var(--text-muted);margin-left:4px;">${a.takeoutScore}</span></td>
+          <td>${a.fleetShadow} units</td>
+          <td>${formatCurrency(a.estimatedDealValue)}</td>
+          <td>${renderBadge({label:a.timingAnalysis.urgency,cls:a.timingAnalysis.urgencyCls})}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>
+  `;
+
+  // Score distribution chart
+  const bands = {
+    'High Priority (80-100)': DATA.filter(a => a.takeoutScore >= 80).length,
+    'Emerging (60-79)': DATA.filter(a => a.takeoutScore >= 60 && a.takeoutScore < 80).length,
+    'Watchlist (40-59)': DATA.filter(a => a.takeoutScore >= 40 && a.takeoutScore < 60).length,
+    'Low (0-39)': DATA.filter(a => a.takeoutScore < 40).length
+  };
+  const colors = ['var(--accent-red)','var(--accent-orange)','var(--accent-yellow)','var(--accent-green)'];
+  const maxBand = Math.max(...Object.values(bands));
+  document.getElementById('scoreDistChart').innerHTML = Object.entries(bands).map(([label, count], i) => `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:140px;font-size:12px;color:var(--text-secondary);text-align:right;">${label}</div>
+      <div style="flex:1;height:28px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${maxBand>0?count/maxBand*100:0}%;background:${colors[i]};border-radius:4px;display:flex;align-items:center;padding-left:8px;">
+          <span style="font-size:12px;font-weight:700;color:#fff;">${count}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Rep summary
+  const repData = {};
+  REPS.forEach(r => { repData[r] = { count: 0, highPriority: 0, value: 0, avgScore: 0 }; });
+  DATA.forEach(a => {
+    if (!repData[a.assignedRep]) return;
+    repData[a.assignedRep].count++;
+    if (a.takeoutScore >= 80) repData[a.assignedRep].highPriority++;
+    repData[a.assignedRep].value += a.estimatedDealValue;
+    repData[a.assignedRep].avgScore += a.takeoutScore;
+  });
+  Object.values(repData).forEach(r => { if (r.count > 0) r.avgScore = Math.round(r.avgScore / r.count); });
+  document.getElementById('repSummaryChart').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Rep</th><th>Accounts</th><th>High Priority</th><th>Pipeline</th><th>Avg Score</th></tr></thead>
+      <tbody>${Object.entries(repData).map(([rep, d]) => `
+        <tr>
+          <td><strong>${rep}</strong></td>
+          <td>${d.count}</td>
+          <td><span style="color:${d.highPriority>0?'var(--accent-red)':'var(--text-muted)'};">${d.highPriority}</span></td>
+          <td>${formatCurrency(d.value)}</td>
+          <td>${d.avgScore} ${renderScoreBar(d.avgScore, '60px')}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>
+  `;
+
+  // AI Insights
+  const immediateWindow = DATA.filter(a => a.timingAnalysis.urgency === 'Immediate Window').length;
+  const topIndustries = {};
+  DATA.filter(a => a.takeoutScore >= 60).forEach(a => { topIndustries[a.industry] = (topIndustries[a.industry]||0) + 1; });
+  const topInd = Object.entries(topIndustries).sort((a,b) => b[1]-a[1]).slice(0,2).map(e=>e[0]);
+  const strategicLowEng = DATA.filter(a => a.strategicAccount && a.competitorScore >= 60 && a.repEngagementLevel === 'Low').length;
+  const strongConfAlign = DATA.filter(a => a.confidenceScore >= 70 && a.takeoutScore >= 80).length;
+
+  document.getElementById('aiInsights').innerHTML = [
+    `${immediateWindow} accounts are in an immediate takeout window with aligned timing signals.`,
+    `Estimated hidden fleet opportunity across the analyzed book is <strong>${totalShadow} devices</strong>.`,
+    `${topInd.join(' and ')} verticals show the highest modeled competitive displacement concentration.`,
+    strategicLowEng > 0 ? `${strategicLowEng} strategic accounts have high competitor likelihood but below-average rep engagement.` : null,
+    `Confidence is strongest where fleet gap, volume leakage, and competitor mentions align (${strongConfAlign} accounts).`,
+    `Total modeled pipeline value for emerging+ opportunities: <strong>${formatCurrency(totalValue)}</strong>.`
+  ].filter(Boolean).map(i => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--accent-cyan);margin-right:8px;">▸</span>${i}</div>`).join('');
+}
+
+/* =============================================================================
+   SECTION 10: RENDER — TAKEOUT TARGETS TAB
+   ============================================================================= */
+
+function renderFilterPresets() {
+  document.getElementById('filterPresets').innerHTML = FILTER_PRESETS.map((p,i) =>
+    `<div class="preset-chip" onclick="applyPreset(${i})">${p.name}</div>`
+  ).join('');
+}
+
+function renderTakeoutFilters() {
+  const f = currentFilters;
+  document.getElementById('takeoutFilters').innerHTML = `
+    <div class="search-box">
+      <input type="text" placeholder="Search accounts, competitors, signals..." value="${f.search}" oninput="currentFilters.search=this.value;renderTakeoutTable();">
+    </div>
+    <div class="filter-item">
+      <label>Rep</label>
+      <select onchange="currentFilters.rep=this.value;renderTakeoutTable();">
+        <option value="">All Reps</option>
+        ${REPS.map(r => `<option value="${r}" ${f.rep===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Industry</label>
+      <select onchange="currentFilters.industry=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        ${INDUSTRIES.map(ind => `<option value="${ind}" ${f.industry===ind?'selected':''}>${ind}</option>`).join('')}
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Competitor Score</label>
+      <select onchange="currentFilters.scoreBand=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        <option value="high" ${f.scoreBand==='high'?'selected':''}>Highly Likely (81+)</option>
+        <option value="likely" ${f.scoreBand==='likely'?'selected':''}>Likely (61-80)</option>
+        <option value="possible" ${f.scoreBand==='possible'?'selected':''}>Possible (31-60)</option>
+        <option value="low" ${f.scoreBand==='low'?'selected':''}>Low (0-30)</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Opportunity</label>
+      <select onchange="currentFilters.opportunityBand=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        <option value="high" ${f.opportunityBand==='high'?'selected':''}>High Priority</option>
+        <option value="emerging" ${f.opportunityBand==='emerging'?'selected':''}>Emerging</option>
+        <option value="watchlist" ${f.opportunityBand==='watchlist'?'selected':''}>Watchlist</option>
+        <option value="low" ${f.opportunityBand==='low'?'selected':''}>Low</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Confidence</label>
+      <select onchange="currentFilters.confidenceBand=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        <option value="high" ${f.confidenceBand==='high'?'selected':''}>High</option>
+        <option value="moderate" ${f.confidenceBand==='moderate'?'selected':''}>Moderate</option>
+        <option value="low" ${f.confidenceBand==='low'?'selected':''}>Low</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Ev. Quality</label>
+      <select onchange="currentFilters.evQualityBand=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        <option value="strong" ${f.evQualityBand==='strong'?'selected':''}>Strong</option>
+        <option value="moderate" ${f.evQualityBand==='moderate'?'selected':''}>Moderate</option>
+        <option value="weak" ${f.evQualityBand==='weak'?'selected':''}>Weak</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Renewal ≤</label>
+      <select onchange="currentFilters.renewalWindow=this.value;renderTakeoutTable();">
+        <option value="">Any</option>
+        <option value="6" ${f.renewalWindow==='6'?'selected':''}>6 months</option>
+        <option value="12" ${f.renewalWindow==='12'?'selected':''}>12 months</option>
+        <option value="18" ${f.renewalWindow==='18'?'selected':''}>18 months</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Urgency</label>
+      <select onchange="currentFilters.timingUrgency=this.value;renderTakeoutTable();">
+        <option value="">All</option>
+        <option value="Immediate Window" ${f.timingUrgency==='Immediate Window'?'selected':''}>Immediate</option>
+        <option value="Act Soon" ${f.timingUrgency==='Act Soon'?'selected':''}>Act Soon</option>
+        <option value="Watch" ${f.timingUrgency==='Watch'?'selected':''}>Watch</option>
+      </select>
+    </div>
+    <div class="filter-item" style="display:flex;gap:8px;align-items:flex-end;">
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--text-secondary);">
+        <input type="checkbox" ${f.strategicOnly?'checked':''} onchange="currentFilters.strategicOnly=this.checked;renderTakeoutTable();"> Strategic
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--text-secondary);">
+        <input type="checkbox" ${f.staleContactOnly?'checked':''} onchange="currentFilters.staleContactOnly=this.checked;renderTakeoutTable();"> Stale
+      </label>
+      <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--text-secondary);">
+        <input type="checkbox" ${f.highValueOnly?'checked':''} onchange="currentFilters.highValueOnly=this.checked;renderTakeoutTable();"> High $
+      </label>
+    </div>
+  `;
+}
+
+function renderTakeoutTable() {
+  const filtered = applyFilters();
+  document.getElementById('filteredCount').textContent = `${filtered.length} of ${DATA.length} accounts`;
+  document.getElementById('takeoutTableBody').innerHTML = filtered.map((a, i) => {
+    const pb = generatePlaybook(a);
+    return `
+    <tr onclick="navigateToAccount('${a.accountId}')">
+      <td style="color:var(--text-muted);">${i+1}</td>
+      <td>
+        <strong>${a.accountName}</strong>
+        ${a.strategicAccount ? '<span class="badge badge-purple" style="font-size:9px;margin-left:4px;">STRATEGIC</span>' : ''}
+        <br><span style="font-size:11px;color:var(--text-muted);">${a.industry}</span>
+      </td>
+      <td>${a.assignedRep}</td>
+      <td>${a.industry}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <strong style="color:${scoreColor(a.competitorScore)};">${a.competitorScore}</strong>
+          ${renderBadge(cpsBand(a.competitorScore))}
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <strong style="color:${scoreColor(a.takeoutScore)};">${a.takeoutScore}</strong>
+          ${renderBadge(takeoutBand(a.takeoutScore))}
+        </div>
+      </td>
+      <td>${a.fleetShadow} units</td>
+      <td><span style="color:${a.renewalMonthsRemaining<=6?'var(--accent-red)':a.renewalMonthsRemaining<=12?'var(--accent-orange)':'var(--text-secondary)'};">${a.renewalMonthsRemaining}mo</span></td>
+      <td>${formatCurrency(a.estimatedDealValue)}</td>
+      <td>${renderBadge(confBand(a.confidenceScore))} <span style="font-size:11px;margin-left:2px;">${a.confidenceScore}</span></td>
+      <td>${renderBadge(evQualBand(a.evidenceQuality))}</td>
+      <td><span style="font-size:11px;color:var(--accent-cyan);">${pb.recommendedActions[0]||''}</span></td>
+    </tr>
+  `}).join('');
+
+  // Wire up table header sorting
+  document.querySelectorAll('#takeoutTable thead th[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const field = th.dataset.sort;
+      if (currentSort.field === field) currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      else { currentSort.field = field; currentSort.dir = 'desc'; }
+      renderTakeoutTable();
+    };
+  });
+}
+
+
+/* =============================================================================
+   SECTION 11: RENDER — ACCOUNT INTELLIGENCE TAB
+   ============================================================================= */
+
+let selectedAccountId = null;
+
+function populateAccountSelectors() {
+  const opts = DATA.map(a => `<option value="${a.accountId}">${a.accountName} (${a.takeoutScore})</option>`).join('');
+  document.getElementById('accountSelect').innerHTML = '<option value="">— Select Account —</option>' + opts;
+  document.getElementById('validationAccountSelect').innerHTML = '<option value="">— Select Account —</option>' + opts;
+}
+
+function selectAccount(accountId) {
+  if (!accountId) { document.getElementById('accountDetail').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Select an account to view intelligence</div>'; return; }
+  selectedAccountId = accountId;
+  const a = DATA.find(x => x.accountId === accountId);
+  if (!a) return;
+
+  // Sync selectors
+  document.getElementById('accountSelect').value = accountId;
+  document.getElementById('validationAccountSelect').value = accountId;
+
+  const pb = generatePlaybook(a);
+  const pg = calcProofGap(a);
+  const bc = getAccountBattlecard(a);
+  const vw = getValidationWorkflow(accountId);
+  const valPct = calcValidationCompleteness(accountId);
+  const timing = a.timingAnalysis;
+
+  document.getElementById('accountDetail').innerHTML = `
+    <!-- Account Header -->
+    <div class="card" style="border-left:4px solid ${scoreColor(a.takeoutScore)};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px;">${a.accountName}</h2>
+          <div style="font-size:13px;color:var(--text-muted);">${a.industry} · ${a.assignedRep} · ${a.employeeCount} employees · ${a.locationCount} locations
+            ${a.strategicAccount ? ' · <span class="badge badge-purple">STRATEGIC</span>' : ''}
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="openPackModal('${a.accountId}','executive')">Executive Brief</button>
+          <button class="btn btn-secondary btn-sm" onclick="openPackModal('${a.accountId}','battlecard')">Rep Battlecard</button>
+          <button class="btn btn-secondary btn-sm" onclick="openPackModal('${a.accountId}','hypothesis')">Customer Hypothesis</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Cards Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Competitor Presence</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          ${renderScoreCircle(a.competitorScore)}
+          <div>${renderBadge(cpsBand(a.competitorScore))}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Takeout Opportunity</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          ${renderScoreCircle(a.takeoutScore)}
+          <div>${renderBadge(takeoutBand(a.takeoutScore))}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Confidence</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          ${renderScoreCircle(a.confidenceScore)}
+          <div>${renderBadge(confBand(a.confidenceScore))}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Evidence Quality</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          ${renderScoreCircle(a.evidenceQuality)}
+          <div>${renderBadge(evQualBand(a.evidenceQuality))}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Shadow Fleet</div>
+        <div class="kpi-value" style="margin-top:8px;">${a.fleetShadow}</div>
+        <div style="font-size:11px;color:var(--text-muted);">non-Xerox units est.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Deal Value</div>
+        <div class="kpi-value" style="margin-top:8px;">${formatCurrency(a.estimatedDealValue)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Renewal</div>
+        <div class="kpi-value" style="margin-top:8px;color:${a.renewalMonthsRemaining<=6?'var(--accent-red)':'var(--text-primary)'};">${a.renewalMonthsRemaining}mo</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Readiness to Engage</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+          ${renderScoreCircle(a.readinessToEngage)}
+          <div>${renderBadge(readinessBand(a.readinessToEngage))}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Why Now Timing -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Why Now — Timing Analysis</div>
+        ${renderBadge({label:timing.urgency, cls:timing.urgencyCls})}
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+        <div style="font-size:13px;color:var(--text-secondary);">Timing Score:</div>
+        <strong style="color:${scoreColor(timing.score)};">${timing.score}</strong>
+        ${renderScoreBar(timing.score, '200px')}
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${timing.summary}</p>
+      ${timing.reasons.length > 0 ? `<div style="margin-top:10px;">${timing.reasons.map(r => `<span class="badge badge-blue" style="margin:2px 4px 2px 0;">${r}</span>`).join('')}</div>` : ''}
+    </div>
+
+    <!-- Signal Breakdown -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Signal Breakdown</div></div>
+      ${renderSignalBreakdown(a)}
+    </div>
+
+    <!-- Signal Governance -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Signal Governance</div></div>
+      ${renderSignalGovernance(a)}
+    </div>
+
+    <!-- Why This Account Was Flagged -->
+    <div class="card" style="border-left:3px solid var(--accent-cyan);">
+      <div class="card-header"><div class="card-title">Why This Account Was Flagged</div></div>
+      ${renderWhyFlagged(a)}
+    </div>
+
+    <!-- Proof Gap Analysis -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><div class="card-title" style="color:var(--accent-green);">What We Know</div></div>
+        ${pg.known.map(k => `<div class="proof-item"><span>${k.item}</span>${proofStatusBadge(k.status)}</div>`).join('')}
+        ${pg.known.length === 0 ? '<div style="padding:12px;color:var(--text-muted);font-size:13px;">No confirmed evidence available</div>' : ''}
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title" style="color:var(--accent-orange);">What We Still Need</div></div>
+        ${pg.needed.map(n => `<div class="proof-item"><span>${n.item}</span>${proofStatusBadge(n.status)}</div>`).join('')}
+        ${pg.needed.length === 0 ? '<div style="padding:12px;color:var(--accent-green);font-size:13px;">All proof points collected!</div>' : ''}
+      </div>
+    </div>
+
+    <!-- Recommended Playbook -->
+    <div class="card" style="border-left:3px solid var(--accent-purple);">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Recommended Playbook: ${pb.playbookName}</div>
+          <div class="card-subtitle">${pb.objective}</div>
+        </div>
+        <div class="flex-center">
+          <span class="badge ${pb.urgency==='Critical'?'badge-red':pb.urgency==='High'?'badge-orange':pb.urgency==='Medium'?'badge-yellow':'badge-green'}">${pb.urgency}</span>
+          ${pb.escalationNeeded ? '<span class="badge badge-red">ESCALATION</span>' : ''}
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Why Now</div>
+            <p style="font-size:13px;color:var(--text-secondary);">${pb.whyNow}</p>
+          </div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Owner: ${pb.owner} · Due in ${pb.dueInDays} days</div>
+          </div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Required Evidence</div>
+            <ul class="playbook-check">
+              ${pb.requiredEvidence.map(e => `<li><span style="color:var(--accent-orange);">☐</span> ${e}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Recommended Actions</div>
+            <ul class="playbook-list">
+              ${pb.recommendedActions.map(a => `<li>${a}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Discovery Questions</div>
+            <ul class="playbook-list">
+              ${pb.discoveryQuestions.map(q => `<li>${q}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Risks to Win</div>
+            <ul class="playbook-list">
+              ${pb.riskToWin.map(r => `<li style="color:var(--accent-orange);">${r}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="playbook-section">
+            <div class="playbook-section-title">Success Metric</div>
+            <p style="font-size:13px;color:var(--accent-green);">${pb.successMetric}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Competitor Battlecard -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Competitor Battlecard: ${bc.competitor}</div>
+        <span class="badge badge-purple">${bc.competitor}</span>
+      </div>
+      <div class="battlecard-grid">
+        <div class="battlecard-item">
+          <div class="battlecard-item-title">Likely Strengths</div>
+          <ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${bc.strengths.map(s => `<li style="padding:2px 0;">• ${s}</li>`).join('')}</ul>
+        </div>
+        <div class="battlecard-item">
+          <div class="battlecard-item-title">Likely Weaknesses</div>
+          <ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${bc.weaknesses.map(w => `<li style="padding:2px 0;">• ${w}</li>`).join('')}</ul>
+        </div>
+        <div class="battlecard-item">
+          <div class="battlecard-item-title">Xerox Counter-Positioning</div>
+          <ul style="list-style:none;font-size:12px;color:var(--accent-cyan);">${bc.counterPositioning.map(c => `<li style="padding:2px 0;">▸ ${c}</li>`).join('')}</ul>
+        </div>
+        <div class="battlecard-item">
+          <div class="battlecard-item-title">Likely Objections</div>
+          <ul style="list-style:none;font-size:12px;color:var(--accent-yellow);">${bc.objections.map(o => `<li style="padding:2px 0;">⚠ ${o}</li>`).join('')}</ul>
+        </div>
+        <div class="battlecard-item">
+          <div class="battlecard-item-title">Proof Points Needed</div>
+          <ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${bc.proofNeeded.map(p => `<li style="padding:2px 0;">☐ ${p}</li>`).join('')}</ul>
+        </div>
+        <div class="battlecard-item" style="background:rgba(239,68,68,0.05);">
+          <div class="battlecard-item-title" style="color:var(--accent-red);">Do Not Say</div>
+          <ul style="list-style:none;font-size:12px;color:var(--accent-red);">${bc.doNotSay.map(d => `<li style="padding:2px 0;">✕ ${d}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evidence Log -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Evidence Log (${(a.evidence||[]).length} items)</div></div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead><tr><th>Source</th><th>Type</th><th>Description</th><th>Fresh</th><th>Reliability</th><th>Polarity</th><th>Verified</th></tr></thead>
+          <tbody>
+            ${(a.evidence||[]).map(e => `
+              <tr>
+                <td><span class="badge badge-blue" style="font-size:10px;">${e.sourceLabel}</span></td>
+                <td style="font-size:11px;">${e.category.replace(/_/g,' ')}</td>
+                <td style="font-size:12px;color:var(--text-secondary);white-space:normal;max-width:300px;">${e.description}</td>
+                <td>${e.freshnessDays}d</td>
+                <td>${(e.reliabilityWeight*100).toFixed(0)}%</td>
+                <td>${e.polarity==='positive'?'<span style="color:var(--accent-green);">+</span>':e.polarity==='negative'?'<span style="color:var(--accent-red);">−</span>':'<span style="color:var(--text-muted);">○</span>'}</td>
+                <td>${e.verified?'<span style="color:var(--accent-green);">✓</span>':'<span style="color:var(--text-muted);">—</span>'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Validation Status -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Validation Status</div>
+        <div class="flex-center">
+          <span style="font-size:12px;color:var(--text-muted);">${valPct}% Complete</span>
+          <div class="progress-bar" style="width:100px;"><div class="progress-fill" style="width:${valPct}%;background:${valPct>=70?'var(--accent-green)':valPct>=40?'var(--accent-yellow)':'var(--accent-orange)'};"></div></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);">
+        ${vw ? `Last updated: ${vw.lastSaved || 'Unknown'} · Manager: ${vw.managerReviewStatus || 'Not reviewed'}` : 'No validation data recorded. Use the Rep Validation tab to log field observations.'}
+      </div>
+    </div>
+  `;
+}
+
+function renderSignalBreakdown(a) {
+  const signals = [
+    { name: 'Fleet Coverage Gap', score: a.subScores.fleetCoverage, weight: '25%', color: 'var(--accent-blue)' },
+    { name: 'CRM/Notes Competitor Evidence', score: a.subScores.crmEvidence, weight: '20%', color: 'var(--accent-purple)' },
+    { name: 'Volume Leakage', score: a.subScores.volumeLeakage, weight: '15%', color: 'var(--accent-cyan)' },
+    { name: 'Device Age Pressure', score: a.subScores.deviceAge, weight: '10%', color: 'var(--accent-yellow)' },
+    { name: 'Service Friction', score: a.subScores.serviceFriction, weight: '10%', color: 'var(--accent-orange)' },
+    { name: 'Renewal Timing', score: a.subScores.renewalTiming, weight: '10%', color: 'var(--accent-red)' },
+    { name: 'Historical Competitive Loss', score: a.subScores.historicalLoss, weight: '5%', color: 'var(--accent-pink)' },
+    { name: 'UCC / External Evidence', score: a.subScores.uccEvidence, weight: '5%', color: 'var(--accent-green)' }
+  ];
+  return signals.map(s => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="width:220px;font-size:12px;color:var(--text-secondary);">${s.name}</div>
+      <div style="width:40px;font-size:11px;color:var(--text-muted);">${s.weight}</div>
+      <div style="flex:1;">${renderScoreBar(s.score)}</div>
+      <div style="width:40px;font-weight:700;font-size:13px;color:${scoreColor(s.score)};">${s.score}</div>
+    </div>
+  `).join('');
+}
+
+function renderSignalGovernance(a) {
+  const ev = a.evidence || [];
+  if (ev.length === 0) return '<div style="padding:12px;color:var(--text-muted);font-size:13px;">No evidence records available</div>';
+  const verified = ev.filter(e => e.verified).length;
+  const inferred = ev.length - verified;
+  const freshest = Math.min(...ev.map(e => e.freshnessDays));
+  const stalest = Math.max(...ev.map(e => e.freshnessDays));
+  const strongest = ev.reduce((best, e) => e.reliabilityWeight > best.reliabilityWeight ? e : best, ev[0]);
+  const counters = ev.filter(e => e.polarity === 'negative').length;
+  return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:24px;font-weight:800;color:#fff;">${ev.length}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Evidence Items</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:24px;font-weight:800;color:var(--accent-green);">${verified}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Verified</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:24px;font-weight:800;color:var(--accent-yellow);">${inferred}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Inferred</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:16px;font-weight:700;color:var(--accent-cyan);">${freshest}d</div>
+        <div style="font-size:11px;color:var(--text-muted);">Freshest Source</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:16px;font-weight:700;color:var(--accent-orange);">${stalest}d</div>
+        <div style="font-size:11px;color:var(--text-muted);">Stalest Source</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:12px;font-weight:600;color:var(--accent-blue);">${strongest.sourceLabel}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Strongest Type</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;">
+        <div style="font-size:24px;font-weight:800;color:${counters>0?'var(--accent-red)':'var(--text-muted)'};">${counters}</div>
+        <div style="font-size:11px;color:var(--text-muted);">Counter-Signals</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderWhyFlagged(a) {
+  const reasons = [];
+  const cr = a.coverageRatio;
+  if (cr < 0.5) reasons.push(`Xerox covers only ${a.xeroxInstalledDevices} of estimated ${a.estimatedTotalDeviceNeed} devices (${(cr*100).toFixed(0)}% coverage)`);
+  if (a.competitorMentionsCount > 0 || a.serviceNoteMentionsCompetitor) reasons.push(`${a.competitorMentionsCount} competitor mentions found in CRM and service records`);
+  const volGap = a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume;
+  if (volGap > a.estimatedTotalPrintVolume * 0.2) reasons.push(`Print demand materially exceeds Xerox-observed volume (${(volGap/a.estimatedTotalPrintVolume*100).toFixed(0)}% gap)`);
+  if (a.renewalMonthsRemaining <= 12) reasons.push(`Renewal is within ${a.renewalMonthsRemaining} months`);
+  if (a.lostToCompetitorCount > 0) reasons.push(`${a.lostToCompetitorCount} prior competitive losses increase displacement probability`);
+  if (a.avgDeviceAgeMonths > 42) reasons.push(`Average device age of ${a.avgDeviceAgeMonths} months suggests refresh opportunity`);
+  if (a.unresolvedServiceIssues > 3) reasons.push(`${a.unresolvedServiceIssues} unresolved service issues indicate friction`);
+  if (a.uccEvidenceFlag) reasons.push(`UCC filing detected${a.uccVendorMention ? ' — vendor: '+a.uccVendorMention : ''}`);
+  if (a.counterSignalCount > 0) reasons.push(`⚠ ${a.counterSignalCount} counter-signal(s) present — validate before pursuit`);
+  if (reasons.length === 0) reasons.push('Account scored below flagging threshold based on current signals.');
+  return `<ul style="list-style:none;font-size:13px;color:var(--text-secondary);line-height:2;">
+    ${reasons.map(r => `<li><span style="color:var(--accent-cyan);margin-right:8px;">▸</span>${r}</li>`).join('')}
+  </ul>`;
+}
+
+function navigateToAccount(accountId) {
+  selectedAccountId = accountId;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector('[data-tab="account"]').classList.add('active');
+  document.getElementById('tab-account').classList.add('active');
+  document.getElementById('accountSelect').value = accountId;
+  selectAccount(accountId);
+}
+
+
+/* =============================================================================
+   SECTION 12: RENDER — FLEET SHADOW ESTIMATOR TAB
+   ============================================================================= */
+
+function renderFleetTab() {
+  const totalNeed = DATA.reduce((s,a) => s + a.estimatedTotalDeviceNeed, 0);
+  const totalXerox = DATA.reduce((s,a) => s + a.xeroxInstalledDevices, 0);
+  const totalShadow = DATA.reduce((s,a) => s + a.fleetShadow, 0);
+  const avgCoverage = (totalXerox / Math.max(totalNeed,1) * 100).toFixed(1);
+  const totalVolume = DATA.reduce((s,a) => s + a.estimatedTotalPrintVolume, 0);
+  const xeroxVolume = DATA.reduce((s,a) => s + a.xeroxObservedPrintVolume, 0);
+  const volLeakage = ((totalVolume - xeroxVolume) / Math.max(totalVolume,1) * 100).toFixed(1);
+
+  document.getElementById('fleetKPIs').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value">${totalNeed}</div><div class="kpi-label">Est. Total Fleet Need</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-blue);">${totalXerox}</div><div class="kpi-label">Xerox Installed</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-red);">${totalShadow}</div><div class="kpi-label">Shadow Fleet (Non-Xerox Est.)</div></div>
+    <div class="kpi-card"><div class="kpi-value">${avgCoverage}%</div><div class="kpi-label">Avg Xerox Coverage</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-orange);">${volLeakage}%</div><div class="kpi-label">Volume Leakage Rate</div></div>
+  `;
+
+  // Fleet table
+  const sorted = [...DATA].sort((a,b) => b.fleetShadow - a.fleetShadow);
+  document.getElementById('fleetTable').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Account</th><th>Industry</th><th>Total Need</th><th>Xerox</th><th>Shadow</th><th>Coverage</th><th>Vol. Leakage</th><th>Device Age</th></tr></thead>
+      <tbody>${sorted.map(a => {
+        const vl = a.estimatedTotalPrintVolume > 0 ? ((a.estimatedTotalPrintVolume - a.xeroxObservedPrintVolume)/a.estimatedTotalPrintVolume*100).toFixed(0) : 0;
+        return `<tr onclick="navigateToAccount('${a.accountId}')">
+          <td><strong>${a.accountName}</strong></td>
+          <td>${a.industry}</td>
+          <td>${a.estimatedTotalDeviceNeed}</td>
+          <td style="color:var(--accent-blue);">${a.xeroxInstalledDevices}</td>
+          <td style="color:var(--accent-red);font-weight:700;">${a.fleetShadow}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${(a.coverageRatio*100).toFixed(0)}%
+              ${renderScoreBar(100 - a.coverageRatio*100, '60px')}
+            </div>
+          </td>
+          <td>${vl}%</td>
+          <td>${a.avgDeviceAgeMonths}mo</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  `;
+
+  // Stacked fleet chart (top 15)
+  const top15 = sorted.slice(0, 15);
+  const maxDevices = Math.max(...top15.map(a => a.estimatedTotalDeviceNeed));
+  document.getElementById('fleetStackedChart').innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:6px;height:180px;">
+      ${top15.map(a => {
+        const h = maxDevices > 0 ? 160 : 0;
+        const xeroxH = maxDevices > 0 ? (a.xeroxInstalledDevices / maxDevices * 160) : 0;
+        const shadowH = maxDevices > 0 ? (a.fleetShadow / maxDevices * 160) : 0;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+          <div style="width:100%;display:flex;flex-direction:column-reverse;">
+            <div style="height:${xeroxH}px;background:var(--accent-blue);border-radius:2px 2px 0 0;min-height:2px;" title="Xerox: ${a.xeroxInstalledDevices}"></div>
+            <div style="height:${shadowH}px;background:var(--accent-red);border-radius:2px 2px 0 0;min-height:2px;opacity:0.7;" title="Shadow: ${a.fleetShadow}"></div>
+          </div>
+          <div style="font-size:8px;color:var(--text-muted);margin-top:4px;transform:rotate(-45deg);white-space:nowrap;">${a.accountName.split(' ')[0]}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-top:20px;font-size:11px;">
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:12px;height:12px;background:var(--accent-blue);border-radius:2px;"></div> Xerox Installed</div>
+      <div style="display:flex;align-items:center;gap:4px;"><div style="width:12px;height:12px;background:var(--accent-red);border-radius:2px;opacity:0.7;"></div> Shadow Fleet (Est.)</div>
+    </div>
+  `;
+
+  // Industry comparison
+  const indData = {};
+  INDUSTRIES.forEach(ind => { indData[ind] = { need: 0, xerox: 0, shadow: 0, count: 0 }; });
+  DATA.forEach(a => {
+    if (!indData[a.industry]) return;
+    indData[a.industry].need += a.estimatedTotalDeviceNeed;
+    indData[a.industry].xerox += a.xeroxInstalledDevices;
+    indData[a.industry].shadow += a.fleetShadow;
+    indData[a.industry].count++;
+  });
+  const maxIndShadow = Math.max(...Object.values(indData).map(d => d.shadow));
+  document.getElementById('industryFleetChart').innerHTML = Object.entries(indData).map(([ind, d]) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="width:120px;font-size:12px;color:var(--text-secondary);">${ind}</div>
+      <div style="flex:1;">
+        <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.04);">
+          <div style="width:${d.need>0?d.xerox/d.need*100:0}%;background:var(--accent-blue);"></div>
+          <div style="width:${d.need>0?d.shadow/d.need*100:0}%;background:var(--accent-red);opacity:0.6;"></div>
+        </div>
+      </div>
+      <div style="width:80px;font-size:11px;color:var(--text-muted);text-align:right;">${d.shadow} shadow</div>
+    </div>
+  `).join('');
+}
+
+/* =============================================================================
+   SECTION 13: RENDER — SIGNAL EXPLAINABILITY TAB
+   ============================================================================= */
+
+function renderExplainability() {
+  // Scoring weights display
+  const weights = [
+    { name: 'Fleet Coverage Gap', weight: 25, color: 'var(--accent-blue)' },
+    { name: 'CRM/Notes Evidence', weight: 20, color: 'var(--accent-purple)' },
+    { name: 'Volume Leakage', weight: 15, color: 'var(--accent-cyan)' },
+    { name: 'Device Age Pressure', weight: 10, color: 'var(--accent-yellow)' },
+    { name: 'Service Friction', weight: 10, color: 'var(--accent-orange)' },
+    { name: 'Renewal Timing', weight: 10, color: 'var(--accent-red)' },
+    { name: 'Historical Loss', weight: 5, color: 'var(--accent-pink)' },
+    { name: 'UCC Evidence', weight: 5, color: 'var(--accent-green)' }
+  ];
+  document.getElementById('scoringWeightsDisplay').innerHTML = weights.map(w => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="width:180px;font-size:12px;color:var(--text-secondary);">${w.name}</div>
+      <div style="flex:1;height:20px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${w.weight}%;background:${w.color};border-radius:4px;"></div>
+      </div>
+      <div style="width:40px;font-size:13px;font-weight:700;color:${w.color};">${w.weight}%</div>
+    </div>
+  `).join('');
+
+  // Data source contribution
+  const srcTypes = {};
+  DATA.forEach(a => {
+    (a.evidence || []).forEach(e => {
+      if (!srcTypes[e.sourceType]) srcTypes[e.sourceType] = { count: 0, avgRel: 0, verified: 0 };
+      srcTypes[e.sourceType].count++;
+      srcTypes[e.sourceType].avgRel += e.reliabilityWeight;
+      if (e.verified) srcTypes[e.sourceType].verified++;
+    });
+  });
+  Object.values(srcTypes).forEach(s => { s.avgRel = (s.avgRel / Math.max(s.count,1) * 100).toFixed(0); });
+  const maxSrcCount = Math.max(...Object.values(srcTypes).map(s => s.count));
+  document.getElementById('dataSourceContrib').innerHTML = Object.entries(srcTypes).sort((a,b) => b[1].count - a[1].count).map(([src, d]) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="width:140px;font-size:12px;color:var(--text-secondary);">${src.replace(/_/g,' ')}</div>
+      <div style="flex:1;height:16px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${d.count/maxSrcCount*100}%;background:var(--accent-blue);border-radius:3px;"></div>
+      </div>
+      <div style="width:80px;font-size:11px;color:var(--text-muted);">${d.count} items · ${d.avgRel}% rel</div>
+    </div>
+  `).join('');
+
+  // Strongest evidence accounts
+  const byEvQual = [...DATA].sort((a,b) => b.evidenceQuality - a.evidenceQuality);
+  document.getElementById('strongestEvidence').innerHTML = byEvQual.slice(0,8).map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;" onclick="navigateToAccount('${a.accountId}')">
+      <div>
+        <div style="font-size:13px;color:var(--text-primary);">${a.accountName}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${(a.evidence||[]).length} evidence items · ${(a.evidence||[]).filter(e=>e.verified).length} verified</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${renderBadge(evQualBand(a.evidenceQuality))}
+        <span style="font-weight:700;color:${scoreColor(a.evidenceQuality)};">${a.evidenceQuality}</span>
+      </div>
+    </div>
+  `).join('');
+
+  // Weakest evidence
+  document.getElementById('weakestEvidence').innerHTML = byEvQual.slice(-8).reverse().map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;" onclick="navigateToAccount('${a.accountId}')">
+      <div>
+        <div style="font-size:13px;color:var(--text-primary);">${a.accountName}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${(a.evidence||[]).length} evidence items · Conf: ${a.confidenceScore}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${renderBadge(evQualBand(a.evidenceQuality))}
+        <span style="font-weight:700;color:${scoreColor(a.evidenceQuality)};">${a.evidenceQuality}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =============================================================================
+   SECTION 14: RENDER — REP VALIDATION TAB
+   ============================================================================= */
+
+function loadValidation(accountId) {
+  if (!accountId) {
+    document.getElementById('validationPanel').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Select an account to manage validation</div>';
+    return;
+  }
+  const a = DATA.find(x => x.accountId === accountId);
+  const vw = getValidationWorkflow(accountId) || {};
+  const valPct = calcValidationCompleteness(accountId);
+
+  document.getElementById('validationPanel').innerHTML = `
+    <div class="card" style="border-left:3px solid var(--accent-purple);">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Rep Validation Workflow — ${a.accountName}</div>
+          <div class="card-subtitle">${a.industry} · ${a.assignedRep}</div>
+        </div>
+        <div class="flex-center">
+          <span style="font-size:12px;color:var(--text-muted);">${valPct}% Complete</span>
+          <div class="progress-bar" style="width:120px;"><div class="progress-fill" style="width:${valPct}%;background:${valPct>=70?'var(--accent-green)':valPct>=40?'var(--accent-yellow)':'var(--accent-orange)'};"></div></div>
+        </div>
+      </div>
+      <form id="validationForm" onsubmit="return saveValidationForm('${accountId}');">
+        <div class="validation-grid">
+          <div class="form-group">
+            <label class="form-label">Incumbent Confirmed</label>
+            <select class="form-select" name="incumbentConfirmed">
+              <option value="unknown" ${vw.incumbentConfirmed==='unknown'||!vw.incumbentConfirmed?'selected':''}>Unknown</option>
+              <option value="yes" ${vw.incumbentConfirmed==='yes'?'selected':''}>Yes</option>
+              <option value="no" ${vw.incumbentConfirmed==='no'?'selected':''}>No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Incumbent Vendor</label>
+            <input class="form-input" name="incumbentVendor" value="${vw.incumbentVendor||''}" placeholder="e.g., HP, Canon, Ricoh">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lease End Confirmed</label>
+            <select class="form-select" name="leaseEndConfirmed">
+              <option value="unknown" ${vw.leaseEndConfirmed==='unknown'||!vw.leaseEndConfirmed?'selected':''}>Unknown</option>
+              <option value="yes" ${vw.leaseEndConfirmed==='yes'?'selected':''}>Yes</option>
+              <option value="no" ${vw.leaseEndConfirmed==='no'?'selected':''}>No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lease End Month</label>
+            <input class="form-input" name="leaseEndMonth" type="month" value="${vw.leaseEndMonth||''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Floor Count Completed</label>
+            <select class="form-select" name="floorCountCompleted">
+              <option value="no" ${vw.floorCountCompleted!=='yes'?'selected':''}>No</option>
+              <option value="yes" ${vw.floorCountCompleted==='yes'?'selected':''}>Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Device Photos Captured</label>
+            <select class="form-select" name="devicePhotosCaptured">
+              <option value="no" ${vw.devicePhotosCaptured!=='yes'?'selected':''}>No</option>
+              <option value="yes" ${vw.devicePhotosCaptured==='yes'?'selected':''}>Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Workflow Pain Confirmed</label>
+            <select class="form-select" name="workflowPainConfirmed">
+              <option value="no" ${vw.workflowPainConfirmed!=='yes'?'selected':''}>No</option>
+              <option value="yes" ${vw.workflowPainConfirmed==='yes'?'selected':''}>Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Customer Dissatisfaction Captured</label>
+            <select class="form-select" name="customerDissatisfactionCaptured">
+              <option value="no" ${vw.customerDissatisfactionCaptured!=='yes'?'selected':''}>No</option>
+              <option value="yes" ${vw.customerDissatisfactionCaptured==='yes'?'selected':''}>Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Buying Committee Mapped</label>
+            <select class="form-select" name="buyingCommitteeMapped">
+              <option value="no" ${vw.buyingCommitteeMapped!=='yes'?'selected':''}>No</option>
+              <option value="yes" ${vw.buyingCommitteeMapped==='yes'?'selected':''}>Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Next Meeting Date</label>
+            <input class="form-input" name="nextMeetingDate" type="date" value="${vw.nextMeetingDate||''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rep Confidence Override (0-100)</label>
+            <input class="form-input" name="repConfidenceOverride" type="number" min="0" max="100" value="${vw.repConfidenceOverride||''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Manager Review Status</label>
+            <select class="form-select" name="managerReviewStatus">
+              <option value="not reviewed" ${vw.managerReviewStatus!=='reviewed'&&vw.managerReviewStatus!=='escalated'?'selected':''}>Not Reviewed</option>
+              <option value="reviewed" ${vw.managerReviewStatus==='reviewed'?'selected':''}>Reviewed</option>
+              <option value="escalated" ${vw.managerReviewStatus==='escalated'?'selected':''}>Escalated</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" name="notes">${vw.notes||''}</textarea>
+        </div>
+        <div class="btn-group" style="margin-top:16px;">
+          <button type="submit" class="btn btn-success">Save Validation</button>
+          <button type="button" class="btn btn-danger" onclick="if(confirm('Reset all validation data for this account?')){resetValidationWorkflow('${accountId}');loadValidation('${accountId}');}">Reset</button>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+function saveValidationForm(accountId) {
+  const form = document.getElementById('validationForm');
+  const fd = new FormData(form);
+  const data = {};
+  fd.forEach((val, key) => { data[key] = val; });
+  data.repConfidenceOverride = parseInt(data.repConfidenceOverride) || 0;
+  data.lastSaved = new Date().toLocaleString();
+  saveValidationWorkflow(accountId, data);
+  loadValidation(accountId);
+  // Refresh account view if open
+  if (selectedAccountId === accountId) selectAccount(accountId);
+  alert('Validation saved successfully.');
+  return false;
+}
+
+
+/* =============================================================================
+   SECTION 15: RENDER — MANAGER CONSOLE TAB
+   ============================================================================= */
+
+function renderManagerConsole() {
+  // Rep comparison data
+  const repStats = {};
+  REPS.forEach(r => {
+    const accts = DATA.filter(a => a.assignedRep === r);
+    repStats[r] = {
+      accounts: accts.length,
+      highPriority: accts.filter(a => a.takeoutScore >= 80).length,
+      emerging: accts.filter(a => a.takeoutScore >= 60 && a.takeoutScore < 80).length,
+      totalValue: accts.reduce((s,a) => s + a.estimatedDealValue, 0),
+      avgScore: accts.length > 0 ? Math.round(accts.reduce((s,a) => s + a.takeoutScore, 0) / accts.length) : 0,
+      avgConfidence: accts.length > 0 ? Math.round(accts.reduce((s,a) => s + a.confidenceScore, 0) / accts.length) : 0,
+      strategic: accts.filter(a => a.strategicAccount).length,
+      staleContact: accts.filter(a => a.lastRepContactDays > 60).length,
+      immediateWindow: accts.filter(a => a.timingAnalysis.urgency === 'Immediate Window').length,
+      needsAction: accts.filter(a => a.takeoutScore >= 60 && a.lastRepContactDays > 30).length
+    };
+  });
+
+  // Manager KPIs
+  const totalHighPriority = DATA.filter(a => a.takeoutScore >= 80).length;
+  const totalPipeline = DATA.filter(a => a.takeoutScore >= 60).reduce((s,a) => s + a.estimatedDealValue, 0);
+  const immediateCount = DATA.filter(a => a.timingAnalysis.urgency === 'Immediate Window').length;
+  const escalationCount = DATA.filter(a => a.strategicAccount && a.takeoutScore >= 70 && (a.repEngagementLevel === 'Low' || a.lastRepContactDays > 60)).length;
+
+  document.getElementById('managerKPIs').innerHTML = `
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(239,68,68,0.15);color:var(--accent-red);">🎯</div><div class="kpi-value">${totalHighPriority}</div><div class="kpi-label">High Priority Accounts</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(59,130,246,0.15);color:var(--accent-blue);">💰</div><div class="kpi-value">${formatCurrency(totalPipeline)}</div><div class="kpi-label">Modeled Pipeline</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(249,115,22,0.15);color:var(--accent-orange);">⚡</div><div class="kpi-value">${immediateCount}</div><div class="kpi-label">Immediate Window</div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:rgba(239,68,68,0.15);color:var(--accent-red);">🚨</div><div class="kpi-value">${escalationCount}</div><div class="kpi-label">Needs Escalation</div></div>
+  `;
+
+  // Rep comparison table
+  document.getElementById('repComparisonTable').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Rep</th><th>Accounts</th><th>High</th><th>Emerging</th><th>Immediate</th><th>Pipeline</th><th>Avg Score</th><th>Stale</th><th>Actions Needed</th></tr></thead>
+      <tbody>${Object.entries(repStats).map(([rep, d]) => `
+        <tr>
+          <td><strong>${rep}</strong></td>
+          <td>${d.accounts}</td>
+          <td style="color:var(--accent-red);font-weight:700;">${d.highPriority}</td>
+          <td style="color:var(--accent-orange);">${d.emerging}</td>
+          <td style="color:var(--accent-red);">${d.immediateWindow}</td>
+          <td>${formatCurrency(d.totalValue)}</td>
+          <td>${d.avgScore} ${renderScoreBar(d.avgScore, '50px')}</td>
+          <td style="color:${d.staleContact>0?'var(--accent-orange)':'var(--text-muted)'};">${d.staleContact}</td>
+          <td style="color:${d.needsAction>0?'var(--accent-yellow)':'var(--text-muted)'};">${d.needsAction}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>
+  `;
+
+  // Escalation queue
+  const escalation = DATA.filter(a => a.strategicAccount && a.takeoutScore >= 60)
+    .sort((a,b) => b.takeoutScore - a.takeoutScore).slice(0, 10);
+  document.getElementById('escalationQueue').innerHTML = escalation.length === 0
+    ? '<div style="padding:16px;color:var(--text-muted);">No items in escalation queue</div>'
+    : escalation.map(a => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;" onclick="navigateToAccount('${a.accountId}')">
+        <div>
+          <div style="font-size:13px;color:var(--text-primary);">${a.accountName} <span class="badge badge-purple" style="font-size:9px;">STRATEGIC</span></div>
+          <div style="font-size:11px;color:var(--text-muted);">${a.assignedRep} · ${a.industry} · Renewal: ${a.renewalMonthsRemaining}mo · Last contact: ${a.lastRepContactDays}d ago</div>
+        </div>
+        <div class="flex-center">
+          ${renderBadge(takeoutBand(a.takeoutScore))}
+          <span style="font-weight:700;color:${scoreColor(a.takeoutScore)};">${a.takeoutScore}</span>
+        </div>
+      </div>
+    `).join('');
+
+  // Forecast pipeline
+  const urgencyBands = {
+    'Immediate Window': { count: 0, value: 0, color: 'var(--accent-red)' },
+    'Act Soon': { count: 0, value: 0, color: 'var(--accent-orange)' },
+    'Watch': { count: 0, value: 0, color: 'var(--accent-yellow)' }
+  };
+  DATA.filter(a => a.takeoutScore >= 40).forEach(a => {
+    const urg = a.timingAnalysis.urgency;
+    if (urgencyBands[urg]) { urgencyBands[urg].count++; urgencyBands[urg].value += a.estimatedDealValue; }
+  });
+  const maxUrgVal = Math.max(...Object.values(urgencyBands).map(b => b.value));
+  document.getElementById('forecastPipeline').innerHTML = Object.entries(urgencyBands).map(([band, d]) => `
+    <div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;color:var(--text-secondary);">${band}</span>
+        <span style="font-size:13px;font-weight:700;color:${d.color};">${d.count} accounts · ${formatCurrency(d.value)}</span>
+      </div>
+      <div style="height:10px;background:rgba(255,255,255,0.04);border-radius:5px;overflow:hidden;">
+        <div style="height:100%;width:${maxUrgVal>0?d.value/maxUrgVal*100:0}%;background:${d.color};border-radius:5px;"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Coverage gap
+  const byIndustry = {};
+  const byCompetitor = {};
+  INDUSTRIES.forEach(ind => { byIndustry[ind] = { count: 0, value: 0 }; });
+  DATA.filter(a => a.takeoutScore >= 60).forEach(a => {
+    byIndustry[a.industry].count++;
+    byIndustry[a.industry].value += a.estimatedDealValue;
+    const comp = a.uccVendorMention || 'Unknown';
+    if (!byCompetitor[comp]) byCompetitor[comp] = { count: 0, value: 0 };
+    byCompetitor[comp].count++;
+    byCompetitor[comp].value += a.estimatedDealValue;
+  });
+
+  document.getElementById('coverageGap').innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">BY INDUSTRY (Emerging+ Opportunities)</div>
+      ${Object.entries(byIndustry).filter(([,d]) => d.count > 0).sort((a,b) => b[1].value - a[1].value).map(([ind, d]) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
+          <span style="width:100px;color:var(--text-secondary);">${ind}</span>
+          <span style="color:var(--accent-blue);">${d.count} accts</span>
+          <span style="color:var(--text-muted);">·</span>
+          <span style="color:var(--accent-green);">${formatCurrency(d.value)}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">BY COMPETITOR (Known + Suspected)</div>
+      ${Object.entries(byCompetitor).sort((a,b) => b[1].count - a[1].count).map(([comp, d]) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
+          <span style="width:100px;color:var(--text-secondary);">${comp}</span>
+          <span style="color:var(--accent-orange);">${d.count} accts</span>
+          <span style="color:var(--text-muted);">·</span>
+          <span style="color:var(--accent-green);">${formatCurrency(d.value)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Manager coaching insights
+  const topRep = Object.entries(repStats).sort((a,b) => b[1].highPriority - a[1].highPriority)[0];
+  const staleRep = Object.entries(repStats).sort((a,b) => b[1].staleContact - a[1].staleContact)[0];
+  const strategicFinance = DATA.filter(a => a.strategicAccount && a.industry === 'Finance' && a.takeoutScore >= 60);
+  const insights = [
+    `${topRep[0]} has the highest concentration of high-priority competitive takeout accounts (${topRep[1].highPriority}).`,
+    staleRep[1].staleContact > 0 ? `${staleRep[0]}'s book contains ${staleRep[1].staleContact} accounts with stale contact timing (60+ days).` : null,
+    strategicFinance.length > 0 ? `${strategicFinance.length} strategic finance accounts show strong displacement potential within 12 months.` : null,
+    `Total modeled competitive takeout pipeline: ${formatCurrency(totalPipeline)} across ${DATA.filter(a => a.takeoutScore >= 60).length} emerging+ accounts.`,
+    escalationCount > 0 ? `${escalationCount} strategic accounts need manager attention due to high opportunity + engagement gap.` : null
+  ].filter(Boolean);
+
+  document.getElementById('managerInsights').innerHTML = `
+    <div style="margin-bottom:16px;font-size:12px;font-weight:600;color:var(--accent-cyan);text-transform:uppercase;">Manager Action Recommendations</div>
+    ${insights.map(i => `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--accent-cyan);margin-right:8px;">▸</span>${i}</div>`).join('')}
+    <div style="margin-top:16px;padding:12px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.2);">
+      <div style="font-size:11px;font-weight:700;color:var(--accent-purple);margin-bottom:6px;">COACHING ACTIONS</div>
+      <ul style="list-style:none;font-size:12px;color:var(--text-secondary);line-height:1.8;">
+        <li>▸ Coach reps on proof collection methodology for high-confidence accounts</li>
+        <li>▸ Escalate strategic discovery support for accounts in immediate window</li>
+        <li>▸ Prioritize executive sponsor alignment on top 5 pipeline opportunities</li>
+        <li>▸ Review stale account motion — ensure bi-weekly contact cadence on emerging targets</li>
+        <li>▸ Validate UCC/lease intelligence on accounts with external evidence flags</li>
+      </ul>
+    </div>
+  `;
+}
+
+/* =============================================================================
+   SECTION 16: RENDER — MODEL VALIDATION / CALIBRATION TAB
+   ============================================================================= */
+
+function renderCalibration() {
+  // Generate mock validation outcomes for demo
+  const validationData = DATA.map(a => {
+    const mv = getModelValidation(a.accountId);
+    const flagged = a.takeoutScore >= 60;
+    // Mock: ~70% of flagged accounts are validated, ~15% false positive
+    const fieldValidated = mv ? mv.fieldValidated : (flagged ? (Math.random() > 0.35 ? 'yes' : 'no') : 'no');
+    const validatedCompetitor = mv ? mv.validatedCompetitor : (fieldValidated === 'yes' && Math.random() > 0.2 ? (a.uccVendorMention || pick(COMPETITORS)) : '');
+    const oppCreated = mv ? mv.opportunityCreated : (fieldValidated === 'yes' && Math.random() > 0.3 ? 'yes' : 'no');
+    const takeoutWon = mv ? mv.takeoutWon : (oppCreated === 'yes' && Math.random() > 0.5 ? 'yes' : 'no');
+    const falsePositive = mv ? mv.falsePositive : (flagged && fieldValidated === 'yes' && !validatedCompetitor ? 'yes' : 'no');
+    return {
+      ...a, flagged, fieldValidated, validatedCompetitor,
+      opportunityCreated: oppCreated, takeoutWon, falsePositive
+    };
+  });
+
+  const flaggedCount = validationData.filter(d => d.flagged).length;
+  const validatedCount = validationData.filter(d => d.fieldValidated === 'yes').length;
+  const fpCount = validationData.filter(d => d.falsePositive === 'yes').length;
+  const oppCount = validationData.filter(d => d.opportunityCreated === 'yes').length;
+  const winCount = validationData.filter(d => d.takeoutWon === 'yes').length;
+  const precision = validatedCount > 0 ? ((validatedCount - fpCount) / validatedCount * 100).toFixed(1) : 'N/A';
+  const fpRate = flaggedCount > 0 ? (fpCount / flaggedCount * 100).toFixed(1) : '0';
+  const convRate = validatedCount > 0 ? (oppCount / validatedCount * 100).toFixed(1) : '0';
+  const winRate = oppCount > 0 ? (winCount / oppCount * 100).toFixed(1) : '0';
+
+  document.getElementById('calibrationKPIs').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value">${flaggedCount}</div><div class="kpi-label">Accounts Flagged</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-blue);">${validatedCount}</div><div class="kpi-label">Field Validated</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-green);">${precision}%</div><div class="kpi-label">Precision Rate</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-red);">${fpRate}%</div><div class="kpi-label">False Positive Rate</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-cyan);">${convRate}%</div><div class="kpi-label">Opportunity Conversion</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:var(--accent-green);">${winRate}%</div><div class="kpi-label">Simulated Win Rate</div></div>
+  `;
+
+  // Validation outcome chart
+  const outcomes = {
+    'Takeout Won': { count: winCount, color: 'var(--accent-green)' },
+    'Opp Created': { count: oppCount - winCount, color: 'var(--accent-blue)' },
+    'Validated Only': { count: validatedCount - oppCount, color: 'var(--accent-yellow)' },
+    'False Positive': { count: fpCount, color: 'var(--accent-red)' },
+    'Not Validated': { count: flaggedCount - validatedCount, color: 'var(--text-muted)' }
+  };
+  const maxOutcome = Math.max(...Object.values(outcomes).map(o => o.count));
+  document.getElementById('validationOutcomeChart').innerHTML = Object.entries(outcomes).map(([label, d]) => `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <div style="width:120px;font-size:12px;color:var(--text-secondary);text-align:right;">${label}</div>
+      <div style="flex:1;height:24px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${maxOutcome>0?d.count/maxOutcome*100:0}%;background:${d.color};border-radius:4px;display:flex;align-items:center;padding-left:8px;">
+          <span style="font-size:11px;font-weight:700;color:#fff;">${d.count}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // Precision by competitor
+  const compPrec = {};
+  validationData.filter(d => d.validatedCompetitor).forEach(d => {
+    const c = d.validatedCompetitor;
+    if (!compPrec[c]) compPrec[c] = { total: 0, correct: 0 };
+    compPrec[c].total++;
+    if (d.falsePositive !== 'yes') compPrec[c].correct++;
+  });
+  document.getElementById('precisionByCompetitor').innerHTML = Object.entries(compPrec).sort((a,b) => b[1].total - a[1].total).map(([comp, d]) => {
+    const prec = d.total > 0 ? (d.correct / d.total * 100).toFixed(0) : 0;
+    return `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="width:120px;font-size:12px;color:var(--text-secondary);">${comp}</div>
+        <div style="flex:1;">${renderScoreBar(parseInt(prec))}</div>
+        <div style="width:60px;font-size:12px;color:var(--text-secondary);">${prec}% (${d.total})</div>
+      </div>
+    `;
+  }).join('');
+
+  // Calibration log table
+  const flaggedAccounts = validationData.filter(d => d.flagged).sort((a,b) => b.takeoutScore - a.takeoutScore);
+  document.getElementById('calibrationTable').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Account</th><th>Score</th><th>Validated</th><th>Competitor</th><th>Opp Created</th><th>Won</th><th>False Positive</th><th>Confidence</th></tr></thead>
+      <tbody>${flaggedAccounts.map(d => `
+        <tr onclick="navigateToAccount('${d.accountId}')" style="cursor:pointer;">
+          <td><strong>${d.accountName}</strong></td>
+          <td>${renderBadge(takeoutBand(d.takeoutScore))} ${d.takeoutScore}</td>
+          <td>${d.fieldValidated==='yes'?'<span style="color:var(--accent-green);">✓ Yes</span>':'<span style="color:var(--text-muted);">—</span>'}</td>
+          <td>${d.validatedCompetitor||'—'}</td>
+          <td>${d.opportunityCreated==='yes'?'<span style="color:var(--accent-blue);">✓</span>':'—'}</td>
+          <td>${d.takeoutWon==='yes'?'<span style="color:var(--accent-green);font-weight:700;">WON</span>':'—'}</td>
+          <td>${d.falsePositive==='yes'?'<span style="color:var(--accent-red);">⚠ FP</span>':'—'}</td>
+          <td>${renderBadge(confBand(d.confidenceScore))}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>
+  `;
+}
+
+
+/* =============================================================================
+   SECTION 17: RENDER — ARCHITECTURE TAB
+   ============================================================================= */
+
+function renderArchitecture() {
+  const layers = [
+    {
+      title: 'Signal Sources',
+      color: 'var(--accent-blue)',
+      items: ['CRM / Aurasell Data','Fleet & Device Telemetry','Service Notes','Print Volume Signals','Account Master Data','Historical Win/Loss','UCC / External Evidence','Rep Field Input']
+    },
+    {
+      title: 'Signal Normalization Layer',
+      color: 'var(--accent-cyan)',
+      items: ['Entity Matching','Missing Data Handling','Standardized Schema','Source Confidence Weighting','Freshness Scoring','Counter-Signal Detection']
+    },
+    {
+      title: 'Evidence / Feature Layer',
+      color: 'var(--accent-purple)',
+      items: ['Fleet Coverage Gap','Volume Leakage','Competitor Mentions','Service Friction','Device Age Pressure','Renewal Timing','Historical Loss','UCC Evidence']
+    },
+    {
+      title: 'Probability Engine',
+      color: 'var(--accent-orange)',
+      items: ['Competitor Presence Score','Fleet Shadow Estimate','Takeout Opportunity Score','Confidence Score','Evidence Quality Score','Timing Analysis','Readiness Assessment']
+    },
+    {
+      title: 'Decision Layer',
+      color: 'var(--accent-yellow)',
+      items: ['Rank Accounts','Recommend Actions','Generate Playbooks','Prioritize Rep Activity','Escalate Manager Attention','Proof Gap Analysis']
+    },
+    {
+      title: 'Sales Intelligence UI',
+      color: 'var(--accent-green)',
+      items: ['Takeout Targets','Account Intelligence','Fleet Shadow Estimator','Signal Explainability','Rep Validation','Manager Console','Model Calibration']
+    }
+  ];
+
+  document.getElementById('archFlow').innerHTML = layers.map((layer, i) => `
+    ${i > 0 ? '<div class="arch-arrow">▼</div>' : ''}
+    <div class="arch-layer" style="border-color:${layer.color}33;border-left:3px solid ${layer.color};">
+      <div class="arch-layer-title" style="color:${layer.color};">${layer.title}</div>
+      <div class="arch-items">
+        ${layer.items.map(item => `<div class="arch-item" style="border-color:${layer.color}33;color:${layer.color}88;">${item}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =============================================================================
+   SECTION 18: TAKEOUT PACK MODAL
+   ============================================================================= */
+
+function openPackModal(accountId, mode) {
+  const a = DATA.find(x => x.accountId === accountId);
+  if (!a) return;
+  const pb = generatePlaybook(a);
+  const pg = calcProofGap(a);
+  const bc = getAccountBattlecard(a);
+  const timing = a.timingAnalysis;
+
+  let content = '';
+  const disclaimer = '<div style="margin-top:20px;padding:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;font-size:11px;color:var(--accent-yellow);line-height:1.6;">⚠ <strong>Confidence Disclaimer:</strong> This opportunity is modeled using aligned signal evidence and inference logic. Field validation is recommended before formal competitive pursuit. Scores reflect probabilistic estimates, not confirmed intelligence.</div>';
+
+  if (mode === 'executive') {
+    content = `
+      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Executive Brief — ${a.accountName}</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Generated ${new Date().toLocaleDateString()} · Xerox Competitive Takeout Intelligence Engine</div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Takeout Score</div><div class="kpi-value" style="color:${scoreColor(a.takeoutScore)};margin-top:6px;">${a.takeoutScore}</div><div style="margin-top:4px;">${renderBadge(takeoutBand(a.takeoutScore))}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Confidence</div><div class="kpi-value" style="margin-top:6px;">${a.confidenceScore}</div><div style="margin-top:4px;">${renderBadge(confBand(a.confidenceScore))}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Evidence Quality</div><div class="kpi-value" style="margin-top:6px;">${a.evidenceQuality}</div><div style="margin-top:4px;">${renderBadge(evQualBand(a.evidenceQuality))}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Modeled Value</div><div class="kpi-value" style="margin-top:6px;">${formatCurrency(a.estimatedDealValue)}</div></div>
+      </div>
+      <div class="grid-2 mt-16">
+        <div>
+          <h3 style="font-size:14px;font-weight:700;color:var(--accent-cyan);margin-bottom:8px;">Account Snapshot</h3>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:2;">
+            <div><strong>Industry:</strong> ${a.industry}</div>
+            <div><strong>Rep:</strong> ${a.assignedRep}</div>
+            <div><strong>Employees:</strong> ${a.employeeCount.toLocaleString()}</div>
+            <div><strong>Shadow Fleet:</strong> ${a.fleetShadow} non-Xerox units (est.)</div>
+            <div><strong>Renewal:</strong> ${a.renewalMonthsRemaining} months</div>
+            <div><strong>Readiness:</strong> ${renderBadge(readinessBand(a.readinessToEngage))}</div>
+            <div><strong>Timing:</strong> ${renderBadge({label:timing.urgency,cls:timing.urgencyCls})}</div>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:14px;font-weight:700;color:var(--accent-cyan);margin-bottom:8px;">Why Now</h3>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">${timing.summary}</p>
+          <h3 style="font-size:14px;font-weight:700;color:var(--accent-orange);margin-top:16px;margin-bottom:8px;">Risks to Win</h3>
+          <ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${pb.riskToWin.map(r => `<li style="padding:3px 0;">⚠ ${r}</li>`).join('')}</ul>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--accent-green);margin-bottom:8px;">Recommended Playbook: ${pb.playbookName}</h3>
+        <p style="font-size:13px;color:var(--text-secondary);">${pb.objective}</p>
+        <div style="margin-top:8px;">${pb.recommendedActions.map(a => `<div style="font-size:12px;color:var(--text-secondary);padding:3px 0;">▸ ${a}</div>`).join('')}</div>
+        <p style="margin-top:10px;font-size:12px;color:var(--accent-green);"><strong>Success Metric:</strong> ${pb.successMetric}</p>
+      </div>
+      ${disclaimer}
+    `;
+  } else if (mode === 'battlecard') {
+    content = `
+      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Rep Battlecard — ${a.accountName}</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Competitive Intelligence for ${bc.competitor} Displacement</div>
+      <div class="grid-2">
+        <div class="kpi-card"><div class="kpi-label">Competitor</div><div class="kpi-value" style="color:var(--accent-purple);margin-top:6px;">${bc.competitor}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Takeout Score</div><div class="kpi-value" style="color:${scoreColor(a.takeoutScore)};margin-top:6px;">${a.takeoutScore}</div></div>
+      </div>
+      <div class="battlecard-grid mt-16">
+        <div class="battlecard-item"><div class="battlecard-item-title">Their Strengths</div><ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${bc.strengths.map(s=>`<li>• ${s}</li>`).join('')}</ul></div>
+        <div class="battlecard-item"><div class="battlecard-item-title">Their Weaknesses</div><ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${bc.weaknesses.map(w=>`<li>• ${w}</li>`).join('')}</ul></div>
+        <div class="battlecard-item"><div class="battlecard-item-title">Our Counter-Position</div><ul style="list-style:none;font-size:12px;color:var(--accent-cyan);">${bc.counterPositioning.map(c=>`<li>▸ ${c}</li>`).join('')}</ul></div>
+        <div class="battlecard-item"><div class="battlecard-item-title">Expected Objections</div><ul style="list-style:none;font-size:12px;color:var(--accent-yellow);">${bc.objections.map(o=>`<li>⚠ ${o}</li>`).join('')}</ul></div>
+      </div>
+      <div class="mt-16">
+        <h3 style="font-size:14px;font-weight:700;color:var(--accent-cyan);margin-bottom:8px;">Discovery Questions</h3>
+        <ul style="list-style:none;font-size:12px;color:var(--text-secondary);">${pb.discoveryQuestions.map(q=>`<li style="padding:3px 0;">▸ ${q}</li>`).join('')}</ul>
+      </div>
+      <div class="mt-16" style="background:rgba(239,68,68,0.05);padding:12px;border-radius:8px;">
+        <h3 style="font-size:14px;font-weight:700;color:var(--accent-red);margin-bottom:8px;">Do Not Say</h3>
+        <ul style="list-style:none;font-size:12px;color:var(--accent-red);">${bc.doNotSay.map(d=>`<li>✕ ${d}</li>`).join('')}</ul>
+      </div>
+      ${disclaimer}
+    `;
+  } else {
+    // Customer hypothesis
+    content = `
+      <h2 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">Customer Hypothesis — ${a.accountName}</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Pre-Call Intelligence Brief</div>
+      <div class="card" style="border-left:3px solid var(--accent-cyan);">
+        <h3 style="font-size:14px;font-weight:700;color:var(--accent-cyan);margin-bottom:8px;">Our Hypothesis</h3>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;">
+          Based on signal analysis, we believe <strong>${a.accountName}</strong> currently operates approximately <strong>${a.fleetShadow} non-Xerox devices</strong> alongside their ${a.xeroxInstalledDevices} Xerox units. ${a.uccVendorMention ? `Evidence suggests <strong>${a.uccVendorMention}</strong> equipment is present.` : 'The incumbent vendor has not been confirmed.'} With renewal in <strong>${a.renewalMonthsRemaining} months</strong>, there may be an opportunity to consolidate their fleet under Xerox.
+        </p>
+      </div>
+      <div class="grid-2 mt-16">
+        <div>
+          <h3 style="font-size:14px;font-weight:700;color:var(--accent-green);margin-bottom:8px;">What We Know</h3>
+          ${pg.known.map(k => `<div class="proof-item"><span style="font-size:12px;">${k.item}</span>${proofStatusBadge(k.status)}</div>`).join('')}
+        </div>
+        <div>
+          <h3 style="font-size:14px;font-weight:700;color:var(--accent-orange);margin-bottom:8px;">What We Need to Confirm</h3>
+          ${pg.needed.slice(0,5).map(n => `<div class="proof-item"><span style="font-size:12px;">${n.item}</span>${proofStatusBadge(n.status)}</div>`).join('')}
+        </div>
+      </div>
+      <div class="mt-16">
+        <h3 style="font-size:14px;font-weight:700;color:var(--accent-purple);margin-bottom:8px;">Questions to Explore</h3>
+        <ul style="list-style:none;font-size:13px;color:var(--text-secondary);">${pb.discoveryQuestions.map(q=>`<li style="padding:4px 0;">▸ ${q}</li>`).join('')}</ul>
+      </div>
+      ${disclaimer}
+    `;
+  }
+
+  document.getElementById('packContent').innerHTML = content;
+  document.getElementById('packModal').classList.add('active');
+}
+
+function closePackModal() {
+  document.getElementById('packModal').classList.remove('active');
+}
+
+// Close modal on overlay click
+document.getElementById('packModal').addEventListener('click', function(e) {
+  if (e.target === this) closePackModal();
+});
+
+/* =============================================================================
+   SECTION 19: INITIALIZATION
+   ============================================================================= */
+
+function initApp() {
+  enrichAccounts();
+  renderOverview();
+  renderFilterPresets();
+  renderTakeoutFilters();
+  renderTakeoutTable();
+  populateAccountSelectors();
+  renderFleetTab();
+  renderExplainability();
+  renderManagerConsole();
+  renderCalibration();
+  renderArchitecture();
+
+  // Show empty state for account tabs
+  document.getElementById('accountDetail').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Select an account from the Takeout Targets list or use the selector above</div>';
+  document.getElementById('validationPanel').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Select an account to manage validation</div>';
+}
+
+// Boot
+initApp();
+
+</script>
+</body>
+</html>
